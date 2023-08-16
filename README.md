@@ -2,11 +2,11 @@
 This project is a minified version of Yahoo Finance built to serve my brother's needs for specific and centralised financial data for his investment planning. Data pulled from yahoo finance and finviz, visualised with ChartJS. Hosted on Vercel.
 
 ## Frontend
-Tech stack: VueJS, Tailwind, Vite
+Tech stack: VueJS, Tailwind, Vite <br>
 Other libraries: Axios, VueX, ChartJS
 
 ## Backend
-Tech stack: Flask (Python)
+Tech stack: Flask (Python) <br>
 Other libraries: yfinance, finviz
 
 # How to set up
@@ -23,3 +23,7 @@ Other libraries: yfinance, finviz
 1. Open cmd, type in "cd backend"
 2. If this is your first time setting up the project, type "pip install -r requirements.txt"
 3. To start the server, direct yourself to the "api" folder by entering "cd api" in the terminal and type in "python app.py"
+
+# Contact
+1. To explore more of my works, head over to ahloytan.netlify.app
+2. Feel free to contact me if there are issues or if there are opportunities that I can help you with!
