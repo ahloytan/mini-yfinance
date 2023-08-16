@@ -2,13 +2,16 @@ from flask_cors import CORS
 from flask import Flask, jsonify, request
 import yfinance as yf
 #dev 
-from util import convertToMillion
+# from util import convertToMillion, processYFinanceScrapedValue, get_soup_cash_flow_level1_processor, get_soup_income_statement_processor
 #prod
-# from .util import convertToMillion
+from .util import convertToMillion, processYFinanceScrapedValue, get_soup_cash_flow_level1_processor, get_soup_income_statement_processor
 import finviz
 
 app = Flask(__name__)
 CORS(app)
+
+
+
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -19,12 +22,14 @@ def yfinance_data():
     stock = request.args.get('stock', default='AAPL')
     ticker = yf.Ticker(stock)
 
+
     #income statement
     quarterly_income_statement = convertToMillion(ticker.quarterly_income_stmt)
     annual_income_statement = convertToMillion(ticker.income_stmt)
     total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
-    income_statement_ttm = quarterly_income_statement.loc['Total Revenue'][:-1].sum()
-
+    income_statement_scraped = get_soup_income_statement_processor(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
+    income_statement_ttm = income_statement_scraped[1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
+    income_statement_ttm = convertToMillion(processYFinanceScrapedValue(income_statement_ttm))
 
     #balance sheet
     quarterly_balance_sheet = convertToMillion(ticker.quarterly_balance_sheet)
@@ -43,9 +48,14 @@ def yfinance_data():
     net_income_from_continuing_operations = annual_cash_flow.loc['Net Income From Continuing Operations'][::-1]
     free_cash_flow = annual_cash_flow.loc['Free Cash Flow'][::-1]
 
-    operating_cash_flow_ttm = quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
+
+    cash_flow_scraped_l1 = get_soup_cash_flow_level1_processor(f'https://finance.yahoo.com/quote/{stock}/cash-flow?p={stock}', ticker)
+
+    operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
+    operating_cash_flow_ttm = convertToMillion(processYFinanceScrapedValue(operating_cash_flow_ttm))
     net_income_from_continuing_operations_ttm = quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
-    free_cash_flow_ttm = quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
+    free_cash_flow_ttm = cash_flow_scraped_l1[-1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
+    free_cash_flow_ttm = convertToMillion(processYFinanceScrapedValue(free_cash_flow_ttm))
 
     data = {
         'fullName': ticker.info["longName"],

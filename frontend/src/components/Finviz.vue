@@ -1,6 +1,6 @@
 <template>
 <div class="relative overflow-x-auto">
-    <table class="w-full text-sm text-center text-gray-500 dark:text-gray-400">
+    <table class="w-full text-center text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
@@ -28,8 +28,8 @@
                 <td :class="['px-6', 'py-4', currentRatioCalculation ? 'text-green-500' : 'text-red-500']">
                     {{ finvizData['currentRatio'] }}
                 </td>
-                <td v-if="currentRatioCalculation" class="px-6 py-4 text-green-500">Pass (Ideally &lt;=1) </td>
-                <td v-else class="px-6 py-4 text-red-500">Fail (Ideally &lt;=1) </td>
+                <td v-if="currentRatioCalculation" class="px-6 py-4 text-green-500">Pass (Ideally &gt;=1) </td>
+                <td v-else class="px-6 py-4 text-red-500">Fail (Ideally &gt;=1) </td>
             </tr>
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">ROE</th>
