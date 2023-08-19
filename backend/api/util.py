@@ -1,10 +1,5 @@
 import requests
-import pandas as pd
 from bs4 import BeautifulSoup
-
-def convertToMillion(value):
-    million = 1000000
-    return value / million
 
 headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/114.0'}
 
@@ -24,15 +19,44 @@ def get_soup_cash_flow_level1_processor(url, ticker):
 
 def get_soup_income_statement_processor(url, ticker):
     soup = get_soup(url.format(ticker=ticker))
-
     table = soup.select_one('.BdT')
+    all_data = []
     for row in table.select('.D\(tbr\)'):
         data = [cell.text for cell in row.select('.Ta\(c\), .Ta\(start\)')]
+        all_data.append(data)
 
-        if data[0] == 'Total Revenue':
-            return data
+        if data[0] == 'Net Income Common Stockholders':
+            return all_data
 
-    return []
+    return all_data
 
 def processYFinanceScrapedValue(value):
     return int(value.replace(',', '')) * 1000
+
+def get_soup_currency(url, ticker):
+    soup = get_soup(url.format(ticker=ticker))
+    currency = soup.select('.Fz\(xs\) span')[-2].text
+    if 'Currency in' in currency:
+        return currency.split('.')[0][-3:]
+
+    return ''
+
+def conversion(value, rate):
+    million = 1000000
+    return value / rate / million
+
+def get_exchange_rate_to_usd(currency):
+    try:
+        response = requests.get(f'https://api.ofx.com/PublicSite.ApiService/OFX/spotrate/Individual/USD/{currency}/1')
+        data = response.json()
+
+        return data['InterbankAmount']
+    except requests.exceptions.RequestException as e:
+        return ''
+    
+
+def get_soup_fcf_growth_rate(stock):
+    url = f'https://sg.finance.yahoo.com/quote/{stock}/analysis?p={stock}'
+    soup = get_soup(url.format(ticker=stock))
+    res = soup.select('.Ta\(end\).Py\(10px\)')
+    return res[-8].text

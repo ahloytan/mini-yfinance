@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // import LoginPage from '../views/LoginPage.vue'
 import Dashboard from '../components/Dashboard.vue'
+import Excel from '../components/Excel.vue'
 import ErrorPage404 from '../components/ErrorPage404.vue'
 
 const routes = [
@@ -21,6 +22,12 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
+    meta: { requiredAuthorization: false }
+  },
+  {
+    path: '/excel',
+    name: 'Excel',
+    component: Excel,
     meta: { requiredAuthorization: false }
   },
   {

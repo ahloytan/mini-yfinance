@@ -1,17 +1,14 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 import yfinance as yf
-#dev 
-# from util import convertToMillion, processYFinanceScrapedValue, get_soup_cash_flow_level1_processor, get_soup_income_statement_processor
-#prod
-from .util import convertToMillion, processYFinanceScrapedValue, get_soup_cash_flow_level1_processor, get_soup_income_statement_processor
 import finviz
+#dev 
+# from util import *
+#prod
+from .util import *
 
 app = Flask(__name__)
 CORS(app)
-
-
-
 
 @app.route('/', methods=['GET'])
 def health_check():
@@ -21,18 +18,25 @@ def health_check():
 def yfinance_data():
     stock = request.args.get('stock', default='AAPL')
     ticker = yf.Ticker(stock)
+    last_close = ticker.history()['Close'].iloc[-1]
+    exchange_rate = 1
 
+    eps_next_5y = get_soup_fcf_growth_rate(stock)
+
+    hasCurrency = get_soup_currency(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
+    if hasCurrency:
+       exchange_rate = get_exchange_rate_to_usd(hasCurrency)
 
     #income statement
-    quarterly_income_statement = convertToMillion(ticker.quarterly_income_stmt)
-    annual_income_statement = convertToMillion(ticker.income_stmt)
+    quarterly_income_statement = conversion(ticker.quarterly_income_stmt, exchange_rate)
+    annual_income_statement = conversion(ticker.income_stmt, exchange_rate)
     total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
     income_statement_scraped = get_soup_income_statement_processor(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
-    income_statement_ttm = income_statement_scraped[1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
-    income_statement_ttm = convertToMillion(processYFinanceScrapedValue(income_statement_ttm))
+    income_statement_ttm = income_statement_scraped[1][1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
+    income_statement_ttm = conversion(processYFinanceScrapedValue(income_statement_ttm), exchange_rate)
 
     #balance sheet
-    quarterly_balance_sheet = convertToMillion(ticker.quarterly_balance_sheet)
+    quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
     cash_equivalent_and_short_term_investments = quarterly_balance_sheet.loc['Cash Cash Equivalents And Short Term Investments']
     try:
         current_debt = quarterly_balance_sheet.loc['Current Debt']
@@ -42,8 +46,8 @@ def yfinance_data():
     total_debt = current_debt + long_term_debt
 
     #cash flow
-    quarterly_cash_flow = convertToMillion(ticker.quarterly_cash_flow)
-    annual_cash_flow = convertToMillion(ticker.cash_flow)
+    quarterly_cash_flow = conversion(ticker.quarterly_cash_flow, exchange_rate)
+    annual_cash_flow = conversion(ticker.cash_flow, exchange_rate)
     operating_cash_flow = annual_cash_flow.loc['Operating Cash Flow'][::-1]
     net_income_from_continuing_operations = annual_cash_flow.loc['Net Income From Continuing Operations'][::-1]
     free_cash_flow = annual_cash_flow.loc['Free Cash Flow'][::-1]
@@ -52,23 +56,27 @@ def yfinance_data():
     cash_flow_scraped_l1 = get_soup_cash_flow_level1_processor(f'https://finance.yahoo.com/quote/{stock}/cash-flow?p={stock}', ticker)
 
     operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
-    operating_cash_flow_ttm = convertToMillion(processYFinanceScrapedValue(operating_cash_flow_ttm))
-    net_income_from_continuing_operations_ttm = quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
+    operating_cash_flow_ttm = conversion(processYFinanceScrapedValue(operating_cash_flow_ttm), exchange_rate)
+
+    net_income_from_continuing_operations_ttm = income_statement_scraped[-1][1] if income_statement_scraped else quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
+    net_income_from_continuing_operations_ttm = conversion(processYFinanceScrapedValue(net_income_from_continuing_operations_ttm), exchange_rate)
     free_cash_flow_ttm = cash_flow_scraped_l1[-1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
-    free_cash_flow_ttm = convertToMillion(processYFinanceScrapedValue(free_cash_flow_ttm))
+    free_cash_flow_ttm = conversion(processYFinanceScrapedValue(free_cash_flow_ttm), exchange_rate)
 
     data = {
+        'epsNext5Y': float(eps_next_5y[:-1]),
+        'lastClose': round(last_close, 2),
         'fullName': ticker.info["longName"],
         'totalRevenue': total_revenue.to_json(),
-        'incomeStatementTTM': income_statement_ttm,
+        'incomeStatementTTM': round(income_statement_ttm, 2),
         'cashEquivalentAndShortTermInvestments': cash_equivalent_and_short_term_investments.to_json(),
         'totalDebt': total_debt.to_json(),
         'operatingCashFlow': operating_cash_flow.to_json(),
         'netIncomeFromContinuingOperations': net_income_from_continuing_operations.to_json(),
         'freeCashFlow': free_cash_flow.to_json(),
-        'operatingCashFlowTTM': operating_cash_flow_ttm,
-        'netIncomeFromContinuingOperationsTTM': net_income_from_continuing_operations_ttm,
-        'freeCashFlowTTM': free_cash_flow_ttm,
+        'operatingCashFlowTTM': round(operating_cash_flow_ttm, 2),
+        'netIncomeFromContinuingOperationsTTM': round(net_income_from_continuing_operations_ttm, 2),
+        'freeCashFlowTTM': round(free_cash_flow_ttm, 2),
     }
 
     return jsonify({"code": 200, "data": data}), 200
@@ -89,13 +97,17 @@ def finviz_data():
         'peg': peg,
         'currentRatio': current_ratio,
         'roe': roe,
-        'epsNext5Y': eps_next_5y,
-        'beta': beta,
+        'epsNext5Y': float(eps_next_5y[:-1]),
+        'beta': float(beta[:-1]),
         'shsOutstanding': shs_outstanding
     }
 
     return jsonify({"code": 200, "data": data}), 200
 
+@app.route('/get_fcf_growth_rate_yr_1_to_5', methods=['GET'])
+def get_fcf_growth_rate_yr_1_to_5():
+    stock = request.args.get('stock', default='AAPL')
+    get_soup_fcf_growth_rate(stock)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

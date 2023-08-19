@@ -1,30 +1,32 @@
 <template>
-    <div class="boxes">
-    <div class="box">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
+    <div id="overlay">
+        <div class="boxes">
+            <div class="box">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="box">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="box">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="box">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
     </div>
-    <div class="box">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-    <div class="box">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-    <div class="box">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-</div>
 </template>
 <script>
 export default {
@@ -32,10 +34,22 @@ export default {
 }
 </script>
 <style>
+#overlay {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
 .boxes {
     height: 32px;
     width: 32px;
-    position: relative;
+    top: 50%;
+    left: 50%;
+    position: absolute;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
     -webkit-transform-origin: 50% 50%;
@@ -53,8 +67,6 @@ export default {
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
 }
-
-
 
 .boxes .box:nth-child(1) {
     -webkit-transform: translate(100%, 0);
