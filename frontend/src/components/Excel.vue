@@ -15,15 +15,15 @@
                 </div>
                 <div v-if="valuationMethod == 0" class="max-w-md flex items-center my-6">
                     <label for="valuationMethod" class="w-full text-left">Enter Valuation:</label>
-                    <input v-model="enteredValuation" type="text" id="valuationMethod" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="enteredValuation" type="number" id="valuationMethod" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="totalDebt" class="w-full text-left">Total Debt:</label>
-                    <input v-model="totalDebt" type="text" id="totalDebt" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="totalDebt" type="number" id="totalDebt" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="cashShortTermInvestments" class="w-full text-left">Cash & Short Term Investments:</label>
-                    <input v-model="cashEquivalentAndShortTermInvestments" type="text" id="cashShortTermInvestments" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="cashEquivalentAndShortTermInvestments" type="number" id="cashShortTermInvestments" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="countries" class="w-full text-left">FCF Growth Rate (Yr 1-5):</label>
@@ -36,23 +36,23 @@
                 </div>
                 <div v-if="fcf == -1" class="max-w-md flex items-center my-6">
                     <label for="fcfGrowthRateYr1To5" class="w-full text-left">Enter FCF:</label>
-                    <input v-model="freeCashFlowGrowthRateYr1To5" type="text" id="fcfGrowthRateYr1To5" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="freeCashFlowGrowthRateYr1To5" type="number" id="fcfGrowthRateYr1To5" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="fcfGrowthRateYr6To10" class="w-full text-left">FCF Growth Rate (Yr 6-10):</label>
-                    <input v-model="freeCashFlowGrowthRateYr6To10" type="text" id="fcfGrowthRateYr6To10" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="freeCashFlowGrowthRateYr6To10" type="number" id="fcfGrowthRateYr6To10" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="fcfGrowthRateYr11To20" class="w-full text-left">FCF Growth Rate (Yr 11-20):</label>
-                    <input v-model="freeCashFlowGrowthRateYr11To20" type="text" id="fcfGrowthRateYr11To20" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="freeCashFlowGrowthRateYr11To20" type="number" id="fcfGrowthRateYr11To20" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="discountRate" class="w-full text-left">Discount Rate:</label>
-                    <input type="text" v-model=discountRate id="discountRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model=discountRate type="number" id="discountRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div> 
                 <div class="max-w-md flex items-center my-6">
                     <label for="lastClose" class="w-full text-left">Last Close:</label>
-                    <input v-model="lastClose" type="text" id="lastClose" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
+                    <input v-model="lastClose" type="number" id="lastClose" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div> 
             </div>
             <div class="p-4">
@@ -138,6 +138,9 @@ export default {
             this.valuationMethodValue = this.yFinanceData['operatingCashFlowTTM'];
             this.discountRateCalculation();
             this.freeCashFlowGrowthRateYr6To10Calculation();
+        },
+        freeCashFlowGrowthRateYr1To5() {
+            this.freeCashFlowGrowthRateYr6To10Calculation();
         }
     },
     computed: {
@@ -212,13 +215,21 @@ export default {
             return 8.2
         },
         freeCashFlowGrowthRateYr6To10Calculation() {
-            const calculatedBase = this.freeCashFlowGrowthRateYr1To5 / 2;
-            
-            if (calculatedBase <= this.base) return this.base;
-            if (calculatedBase > 15) return 15;
-
-            return calculatedBase;
+            this.freeCashFlowGrowthRateYr6To10 = this.freeCashFlowGrowthRateYr1To5 / 2;
+            if (this.freeCashFlowGrowthRateYr6To10 <= this.base) this.freeCashFlowGrowthRateYr6To10 = this.base;
+            if (this.freeCashFlowGrowthRateYr6To10 >= 15) this.freeCashFlowGrowthRateYr6To10 = 15;
         },
     }
 }
 </script>
+<style>
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
