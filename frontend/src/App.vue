@@ -2,12 +2,12 @@
   <Navbar/>
   <router-view></router-view>
   
-<footer class="bg-gray-800">
-    <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-center">
-      <span class="text-sm text-gray-400 sm:text-center dark:text-gray-400">© 2023 <a href="https://flowbite.com/" class="hover:underline">Aloysius Tan</a>. Coded in Singapore. All Rights Reserved.
-      </span>
-    </div>
-</footer>
+  <footer class="bg-gray-800">
+      <div class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-center">
+        <span class="text-sm text-gray-400 sm:text-center dark:text-gray-400">© 2023 <a href="https://flowbite.com/" class="hover:underline">Aloysius Tan</a>. Coded in Singapore. All Rights Reserved.
+        </span>
+      </div>
+  </footer>
 
 </template>
 <script>

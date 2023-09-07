@@ -24,6 +24,10 @@ Other libraries: yfinance, finviz
 2. If this is your first time setting up the project, type "pip install -r requirements.txt"
 3. To start the server, direct yourself to the "api" folder by entering "cd api" in the terminal and type in "python app.py"
 
+## Deployment
+1. Go to frontend folder. Type "vercel ." and "vercel --prod" after
+2. Go to backend folder. Type "vercel ." and "vercel --prod" after
+
 # Contact
 1. To explore more of my works, head over to ahloytan.netlify.app
 2. Feel free to contact me if there are issues or if there are opportunities that I can help you with!

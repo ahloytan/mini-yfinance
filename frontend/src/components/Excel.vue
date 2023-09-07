@@ -1,8 +1,8 @@
 <template>
     <LoadingScreen v-if="loading"/>
-    <div class="h-screen">
+    <div class="md:h-screen">
         <SearchBar />
-        <div class="flex items-center justify-center">
+        <div class="md:flex items-center justify-center">
             <div class="p-4">
                 <div class="max-w-md flex items-center my-6">
                     <label for="countries" class="w-full text-left">Select Option:</label>
@@ -27,7 +27,7 @@
                 </div>
                 <div class="max-w-md flex items-center my-6">
                     <label for="countries" class="w-full text-left">FCF Growth Rate (Yr 1-5):</label>
-                    <select id="fcf" v-model="fcf" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5">
+                    <select id="fcf" v-model="fcf" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
                         <option :value="yFinanceData['epsNext5Y']">Yahoo Finance ({{ yFinanceData['epsNext5Y'] }}%)</option>
                         <option :value="finvizData['epsNext5Y']">Finviz ({{ finvizData['epsNext5Y'] }}%)</option>
                         <option :value="averageFCFGrowth">Average ({{ averageFCFGrowth }}%)</option>
@@ -57,7 +57,7 @@
             </div>
             <div class="p-4">
                 <table class="text-center mx-auto">
-                    <thead class="text-xs uppercase bg-gray-50">
+                    <thead class="text-sm md:text-base uppercase bg-gray-50">
                         <tr>
                             <th scope="col" class="px-6 py-3">Field</th>
                             <th scope="col" class="px-6 py-3">Value</th>
@@ -136,11 +136,13 @@ export default {
             this.totalDebt = Object.values(this.yFinanceData['totalDebt'])[0];
             this.lastClose = this.yFinanceData['lastClose'];
             this.valuationMethodValue = this.yFinanceData['operatingCashFlowTTM'];
-            this.discountRateCalculation();
-            this.freeCashFlowGrowthRateYr6To10Calculation();
+            this.freeCashFlowGrowthRateYr6To10Calculation(this.yFinanceData['epsNext5Y']);
+        },
+        finvizData() {
+            this.discountRate = this.discountRateCalculation(this.finvizData['beta']);
         },
         freeCashFlowGrowthRateYr1To5() {
-            this.freeCashFlowGrowthRateYr6To10Calculation();
+            this.freeCashFlowGrowthRateYr6To10Calculation(this.yFinanceData['epsNext5Y']);
         }
     },
     computed: {
@@ -201,8 +203,8 @@ export default {
     },
     methods: {
         ...mapActions(['getYFinanceData', 'getFinvizData']),
-        discountRateCalculation() {
-            const beta = this.finvizData['beta'] || 0;
+        discountRateCalculation(betaVal) {
+            const beta = betaVal || 0;
 
             if (beta < 1) return 5.0;
             if (beta < 1.1) return 5.8;
@@ -214,8 +216,8 @@ export default {
 
             return 8.2
         },
-        freeCashFlowGrowthRateYr6To10Calculation() {
-            this.freeCashFlowGrowthRateYr6To10 = this.freeCashFlowGrowthRateYr1To5 / 2;
+        freeCashFlowGrowthRateYr6To10Calculation(epsNext5Y) {
+            this.freeCashFlowGrowthRateYr6To10 = epsNext5Y / 2;
             if (this.freeCashFlowGrowthRateYr6To10 <= this.base) this.freeCashFlowGrowthRateYr6To10 = this.base;
             if (this.freeCashFlowGrowthRateYr6To10 >= 15) this.freeCashFlowGrowthRateYr6To10 = 15;
         },
@@ -231,5 +233,9 @@ input::-webkit-inner-spin-button {
 
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+#fcf {
+    max-width: 220px;
 }
 </style>
