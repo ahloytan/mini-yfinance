@@ -32,8 +32,10 @@
           <div class="hidden sm:ml-6 sm:block">
             <div class="flex space-x-4">
               <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-              <a href="/dashboard" :class="activeLink('/dashboard')" class="rounded-md px-3 py-2 text-sm font-medium">Dashboard</a>
+              <a href="/dashboard" :class="activeLink('/dashboard', '/')" class="rounded-md px-3 py-2 text-sm font-medium">Dashboard</a>
               <a href="/excel" :class="activeLink('/excel')" class="rounded-md px-3 py-2 text-sm font-medium">Excel</a>
+              <a href="https://github.com/ahloytan" target="_blank" :class="activeLink('/github')" class="rounded-md px-3 py-2 text-sm font-medium">Github</a>
+              <a href="https://ahloytan.netlify.app" target="_blank" :class="activeLink('/portfolio')" class="rounded-md px-3 py-2 text-sm font-medium">Portfolio</a>
             </div>
           </div>
         </div>
@@ -91,9 +93,9 @@ export default {
   name: 'Navbar',
   computed: {
     activeLink() {
-      return (x) => {
+      return (x, y) => {
         const url = window.location.pathname;
-        return url === x ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white';
+        return url === x || url === y  ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white';
       }
     }
   }

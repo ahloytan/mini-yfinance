@@ -6,27 +6,27 @@
             <Line
                 id="operating-cash-flow"
                 label="Operating Cash Flow"
-                :data="prepareChartData('operatingCashFlow', 'Operating Cash Flow', 'operatingCashFlowTTM')"
+                :data="prepareChartData('operatingCashFlow', 'Operating Cash Flow', 'operatingCashFlowTTM', 'rgba(255, 159, 64, 1)')"
                 
             />
             <Line
                 class="my-4 md:mt-8"
                 id="free-cash-flow"
                 label="Free Cash Flow"
-                :data="prepareChartData('freeCashFlow', 'Free Cash Flow', 'freeCashFlowTTM')"
+                :data="prepareChartData('freeCashFlow', 'Free Cash Flow', 'freeCashFlowTTM', 'rgba(75, 192, 192, 1)')"
             />
         </div>
         <div class="chart mx-auto md:p-8">
             <Line
                 id="net-income"
                 label="Net Income"
-                :data="prepareChartData('netIncomeFromContinuingOperations', 'Net Income', 'netIncomeFromContinuingOperationsTTM')"
+                :data="prepareChartData('netIncomeFromContinuingOperations', 'Net Income', 'netIncomeFromContinuingOperationsTTM', 'rgba(54, 162, 235, 1)')"
             />
             <Line
                 class="my-4 md:mt-8"
                 id="total-revenue"
                 label="Total Revenue"
-                :data="prepareChartData('totalRevenue', 'Total Revenue', 'incomeStatementTTM')"
+                :data="prepareChartData('totalRevenue', 'Total Revenue', 'incomeStatementTTM', 'rgba(153, 102, 255, 1)')"
             />
         </div>
     </div>
@@ -66,7 +66,7 @@ export default {
         prepareChartData() {
             let timestamps;
             let values;
-            return (dataKey, label, ttmKey) => {
+            return (dataKey, label, ttmKey, color) => {
                 if (this.yFinanceData[dataKey]) {
                     timestamps = Object.keys(this.yFinanceData[dataKey]).map(Number);
                     values = Object.values(this.yFinanceData[dataKey]).map(Number);
@@ -77,7 +77,8 @@ export default {
 
                 return {
                     labels: timestamps,
-                    datasets: [{ label, data: values }],
+                    datasets: [{ label, data: values, borderColor: color, backgroundColor: color,}],
+                    
                 };
             }
         },
