@@ -1,11 +1,12 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request
 import yfinance as yf
-import finviz
+from finvizfinance.quote import finvizfinance
+
 #dev 
-# from util import *
+from util import *
 #prod
-from .util import *
+# from .util import *
 
 app = Flask(__name__)
 CORS(app)
@@ -18,12 +19,14 @@ def health_check():
 def yfinance_data():
     stock = request.args.get('stock', default='AAPL')
     ticker = yf.Ticker(stock)
+
     last_close = ticker.history()['Close'].iloc[-1]
     exchange_rate = 1
 
     eps_next_5y = get_soup_fcf_growth_rate(stock)
 
     hasCurrency = get_soup_currency(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
+
     if hasCurrency:
        exchange_rate = get_exchange_rate_to_usd(hasCurrency)
 
@@ -33,7 +36,7 @@ def yfinance_data():
     total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
     income_statement_scraped = get_soup_income_statement_processor(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
     income_statement_ttm = income_statement_scraped[1][1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
-    income_statement_ttm = conversion(processYFinanceScrapedValue(income_statement_ttm), exchange_rate)
+    income_statement_ttm = conversion(process_yfinance_scraped_value(income_statement_ttm), exchange_rate)
 
     #balance sheet
     quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
@@ -56,17 +59,18 @@ def yfinance_data():
     cash_flow_scraped_l1 = get_soup_cash_flow_level1_processor(f'https://finance.yahoo.com/quote/{stock}/cash-flow?p={stock}', ticker)
 
     operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
-    operating_cash_flow_ttm = conversion(processYFinanceScrapedValue(operating_cash_flow_ttm), exchange_rate)
+    operating_cash_flow_ttm = conversion(process_yfinance_scraped_value(operating_cash_flow_ttm), exchange_rate)
 
     net_income_from_continuing_operations_ttm = income_statement_scraped[-1][1] if income_statement_scraped else quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
-    net_income_from_continuing_operations_ttm = conversion(processYFinanceScrapedValue(net_income_from_continuing_operations_ttm), exchange_rate)
+    net_income_from_continuing_operations_ttm = conversion(process_yfinance_scraped_value(net_income_from_continuing_operations_ttm), exchange_rate)
     free_cash_flow_ttm = cash_flow_scraped_l1[-1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
-    free_cash_flow_ttm = conversion(processYFinanceScrapedValue(free_cash_flow_ttm), exchange_rate)
+    free_cash_flow_ttm = conversion(process_yfinance_scraped_value(free_cash_flow_ttm), exchange_rate)
 
     data = {
         'epsNext5Y': float(eps_next_5y[:-1]),
         'lastClose': round(last_close, 2),
-        'fullName': ticker.info["longName"],
+        # 'fullName': ticker.info["longName"], //.info currently not working because yahoo API end point change. Waiting for fix https://github.com/ranaroussi/yfinance/issues/1729#issuecomment-1793803181
+        'fullName': stock,
         'totalRevenue': total_revenue.to_json(),
         'incomeStatementTTM': round(income_statement_ttm, 2),
         'cashEquivalentAndShortTermInvestments': cash_equivalent_and_short_term_investments.to_json(),
@@ -85,13 +89,14 @@ def yfinance_data():
 def finviz_data():
     stock = request.args.get('stock', default='AAPL')
 
-    finviz_data = finviz.get_stock(stock)
-    peg = finviz_data['PEG']
-    current_ratio = finviz_data['Current Ratio']
-    roe = finviz_data['ROE']
-    eps_next_5y = finviz_data['EPS next 5Y']
-    beta = finviz_data['Beta']
-    shs_outstanding = finviz_data['Shs Outstand']
+    finviz_finance_data = finvizfinance(stock).ticker_fundament()
+
+    peg = finviz_finance_data['PEG']
+    current_ratio = finviz_finance_data['Current Ratio']
+    roe = finviz_finance_data['ROE']
+    eps_next_5y = finviz_finance_data['EPS next 5Y']
+    beta = finviz_finance_data['Beta']
+    shs_outstanding = finviz_finance_data['Shs Outstand']
 
     data = {
         'peg': peg,

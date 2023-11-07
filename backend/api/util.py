@@ -30,7 +30,7 @@ def get_soup_income_statement_processor(url, ticker):
 
     return all_data
 
-def processYFinanceScrapedValue(value):
+def process_yfinance_scraped_value(value):
     return int(value.replace(',', '')) * 1000
 
 def get_soup_currency(url, ticker):
