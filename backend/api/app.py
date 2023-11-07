@@ -70,7 +70,7 @@ def yfinance_data():
         'epsNext5Y': float(eps_next_5y[:-1]),
         'lastClose': round(last_close, 2),
         # 'fullName': ticker.info["longName"], //.info currently not working because yahoo API end point change. Waiting for fix https://github.com/ranaroussi/yfinance/issues/1729#issuecomment-1793803181
-        'fullName': stock,
+        'fullName': finvizfinance(stock).ticker_fundament()['Company'],
         'totalRevenue': total_revenue.to_json(),
         'incomeStatementTTM': round(income_statement_ttm, 2),
         'cashEquivalentAndShortTermInvestments': cash_equivalent_and_short_term_investments.to_json(),
