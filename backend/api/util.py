@@ -7,19 +7,22 @@ def get_soup(url):
     r = requests.get(url, headers=headers)
     return BeautifulSoup(r.content, 'html.parser')
 
-def get_soup_cash_flow_level1_processor(url, ticker):
+def get_soup_cash_flow_level1_processor_and_currency(url, ticker):
     soup = get_soup(url.format(ticker=ticker))
     table = soup.select_one('.BdT')
     all_data = []
+            
+    currency = get_currency(soup)
     for row in table.select('.D\(tbr\)'):
         data = [cell.text for cell in row.select('.Ta\(c\), .Ta\(start\)')]
         all_data.append(data)
 
-    return all_data
+    return all_data, currency
 
 def get_soup_income_statement_processor(url, ticker):
     soup = get_soup(url.format(ticker=ticker))
     table = soup.select_one('.BdT')
+
     all_data = []
     for row in table.select('.D\(tbr\)'):
         data = [cell.text for cell in row.select('.Ta\(c\), .Ta\(start\)')]
@@ -27,19 +30,18 @@ def get_soup_income_statement_processor(url, ticker):
 
         if data[0] == 'Net Income Common Stockholders':
             return all_data
+        
+    return all_data 
 
-    return all_data
-
-def process_yfinance_scraped_value(value):
-    return int(value.replace(',', '')) * 1000
-
-def get_soup_currency(url, ticker):
-    soup = get_soup(url.format(ticker=ticker))
+def get_currency(soup):
     currency = soup.select('.Fz\(xs\) span')[-2].text
     if 'Currency in' in currency:
         return currency.split('.')[0][-3:]
-
+    
     return ''
+
+def process_yfinance_scraped_value(value):
+    return int(value.replace(',', '')) * 1000
 
 def conversion(value, rate):
     million = 1000000

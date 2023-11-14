@@ -25,11 +25,6 @@ def yfinance_data():
 
     eps_next_5y = get_soup_fcf_growth_rate(stock)
 
-    hasCurrency = get_soup_currency(f'https://finance.yahoo.com/quote/{stock}/financials?p={stock}', ticker)
-
-    if hasCurrency:
-       exchange_rate = get_exchange_rate_to_usd(hasCurrency)
-
     yahoo_url = 'https://finance.yahoo.com/quote'
 
     #income statement
@@ -37,6 +32,7 @@ def yfinance_data():
     annual_income_statement = conversion(ticker.income_stmt, exchange_rate)
     total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
     income_statement_scraped = get_soup_income_statement_processor(f'{yahoo_url}/{stock}/financials?p={stock}', ticker)
+
     income_statement_ttm = income_statement_scraped[1][1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
     income_statement_ttm = conversion(process_yfinance_scraped_value(income_statement_ttm), exchange_rate)
 
@@ -57,8 +53,11 @@ def yfinance_data():
     net_income_from_continuing_operations = annual_cash_flow.loc['Net Income From Continuing Operations'][::-1]
     free_cash_flow = annual_cash_flow.loc['Free Cash Flow'][::-1]
 
+    cash_flow_scraped_l1, hasCurrency = get_soup_cash_flow_level1_processor_and_currency(f'{yahoo_url}/{stock}/cash-flow?p={stock}', ticker)
 
-    cash_flow_scraped_l1 = get_soup_cash_flow_level1_processor(f'{yahoo_url}/{stock}/cash-flow?p={stock}', ticker)
+    #Currency
+    if hasCurrency:
+       exchange_rate = get_exchange_rate_to_usd(hasCurrency)
 
     operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
     operating_cash_flow_ttm = conversion(process_yfinance_scraped_value(operating_cash_flow_ttm), exchange_rate)
