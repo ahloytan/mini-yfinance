@@ -39,7 +39,7 @@ import LoadingScreen from './LoadingScreen.vue'
 import { Chart, registerables } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import { mapGetters, mapActions } from 'vuex';
-import moment from 'moment'
+import dayjs from 'dayjs'
 Chart.register(...registerables);
 
 export default {
@@ -70,7 +70,7 @@ export default {
                 if (this.yFinanceData[dataKey]) {
                     timestamps = Object.keys(this.yFinanceData[dataKey]).map(Number);
                     values = Object.values(this.yFinanceData[dataKey]).map(Number);
-                    timestamps = timestamps.map((timestamp) => moment(timestamp).format('DD/MM/YY'));
+                    timestamps = timestamps.map((timestamp) => dayjs(timestamp).format('DD/MM/YY'));
                     timestamps.push('TTM');
                     values.push(this.yFinanceData[ttmKey]);
                 }
