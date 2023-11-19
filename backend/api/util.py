@@ -62,3 +62,10 @@ def get_soup_fcf_growth_rate(stock):
     soup = get_soup(url.format(ticker=stock))
     res = soup.select('.Ta\(end\).Py\(10px\)')
     return res[-8].text
+
+def is_float(string):
+    try:
+        float_value = float(string)
+        return float_value
+    except ValueError:
+        return 0

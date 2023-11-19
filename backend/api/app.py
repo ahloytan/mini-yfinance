@@ -103,7 +103,7 @@ def finviz_data():
         'peg': peg,
         'currentRatio': current_ratio,
         'roe': roe,
-        'epsNext5Y': float(eps_next_5y[:-1]),
+        'epsNext5Y': is_float(eps_next_5y[:-1]),
         'beta': float(beta[:-1]),
         'shsOutstanding': shs_outstanding
     }
@@ -114,6 +114,7 @@ def finviz_data():
 def get_fcf_growth_rate_yr_1_to_5():
     stock = request.args.get('stock', default='AAPL')
     get_soup_fcf_growth_rate(stock)
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
