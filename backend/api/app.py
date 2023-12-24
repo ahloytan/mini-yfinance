@@ -2,11 +2,13 @@ from flask_cors import CORS
 from flask import Flask, jsonify, request
 import yfinance as yf
 from finvizfinance.quote import finvizfinance
+import os
 
-#dev 
-from util import *
-#prod
-# from .util import *
+
+if os.getenv('ENV') == 'production':
+    from .util import *
+else:
+    from util import *
 
 app = Flask(__name__)
 CORS(app)

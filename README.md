@@ -23,6 +23,7 @@ Other libraries: yfinance, finviz
 1. Open cmd, type in "cd backend"
 2. If this is your first time setting up the project, type "pip install -r requirements.txt"
 3. To start the server, direct yourself to the "api" folder by entering "cd api" in the terminal and type in "python app.py"
+4. Note: If you want to deploy a replica, please be reminded to set an environment variable (key="ENV" and value="production") in the Vercel settings page
 
 ## Deployment
 1. Go to frontend folder. Type "vercel ." and "vercel --prod" after
