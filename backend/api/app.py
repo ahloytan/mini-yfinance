@@ -3,7 +3,8 @@ from flask import Flask, jsonify, request
 import yfinance as yf
 from finvizfinance.quote import finvizfinance
 import os
-
+import json
+from timeit import default_timer as timer
 
 if os.getenv('ENV') == 'production':
     from .util import *
@@ -17,30 +18,31 @@ CORS(app)
 def health_check():
     return "ok"
 
-@app.route('/yfinance_data', methods=['GET'])
-def yfinance_data():
+@app.route('/yfinance_data_v1', methods=['GET'])
+def yfinance_data_v1():
     stock = request.args.get('stock', default='AAPL')
     ticker = yf.Ticker(stock)
-
     last_close = ticker.history()['Close'].iloc[-1]
     exchange_rate = 1
 
-    eps_next_5y = get_soup_fcf_growth_rate(stock)
-
-    yahoo_url = 'https://finance.yahoo.com/quote'
+    #eps
+    eps_next_5y = get_eps_next_5y(stock)
 
     #income statement
-    quarterly_income_statement = conversion(ticker.quarterly_income_stmt, exchange_rate)
-    annual_income_statement = conversion(ticker.income_stmt, exchange_rate)
-    total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
-    income_statement_scraped = get_soup_income_statement_processor(f'{yahoo_url}/{stock}/financials?p={stock}', ticker)
+    try:
+        total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = get_income_statement_data(stock)
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'})   
 
-    income_statement_ttm = income_statement_scraped[1][1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
-    income_statement_ttm = conversion(process_yfinance_scraped_value(income_statement_ttm), exchange_rate)
 
     #balance sheet
+    try:
+        cash_equivalent_and_short_term_investments = get_balance_sheet_data(stock, exchange_rate)
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'})   
+
     quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
-    cash_equivalent_and_short_term_investments = quarterly_balance_sheet.loc['Cash Cash Equivalents And Short Term Investments']
+
     try:
         current_debt = quarterly_balance_sheet.loc['Current Debt']
     except KeyError:
@@ -49,38 +51,22 @@ def yfinance_data():
     total_debt = current_debt + long_term_debt
 
     #cash flow
-    quarterly_cash_flow = conversion(ticker.quarterly_cash_flow, exchange_rate)
-    annual_cash_flow = conversion(ticker.cash_flow, exchange_rate)
-    operating_cash_flow = annual_cash_flow.loc['Operating Cash Flow'][::-1]
-    net_income_from_continuing_operations = annual_cash_flow.loc['Net Income From Continuing Operations'][::-1]
-    free_cash_flow = annual_cash_flow.loc['Free Cash Flow'][::-1]
-
-    cash_flow_scraped_l1, hasCurrency = get_soup_cash_flow_level1_processor_and_currency(f'{yahoo_url}/{stock}/cash-flow?p={stock}', ticker)
-
-    #Currency
-    if hasCurrency:
-       exchange_rate = get_exchange_rate_to_usd(hasCurrency)
-
-    operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
-    operating_cash_flow_ttm = conversion(process_yfinance_scraped_value(operating_cash_flow_ttm), exchange_rate)
-
-    net_income_from_continuing_operations_ttm = income_statement_scraped[-1][1] if income_statement_scraped else quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
-    net_income_from_continuing_operations_ttm = conversion(process_yfinance_scraped_value(net_income_from_continuing_operations_ttm), exchange_rate)
-    free_cash_flow_ttm = cash_flow_scraped_l1[-1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
-    free_cash_flow_ttm = conversion(process_yfinance_scraped_value(free_cash_flow_ttm), exchange_rate)
+    try:
+        operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = get_cash_flow_data(stock, exchange_rate)
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'})
 
     data = {
         'epsNext5Y': float(eps_next_5y[:-1]),
         'lastClose': round(last_close, 2),
-        # 'fullName': ticker.info["longName"], //.info currently not working because yahoo API end point change. Waiting for fix https://github.com/ranaroussi/yfinance/issues/1729#issuecomment-1793803181
         'fullName': finvizfinance(stock).ticker_fundament()['Company'],
-        'totalRevenue': total_revenue.to_json(),
+        'totalRevenue': json.dumps(total_revenue),
         'incomeStatementTTM': round(income_statement_ttm, 2),
-        'cashEquivalentAndShortTermInvestments': cash_equivalent_and_short_term_investments.to_json(),
+        'cashEquivalentAndShortTermInvestments': json.dumps(cash_equivalent_and_short_term_investments),
         'totalDebt': total_debt.to_json(),
-        'operatingCashFlow': operating_cash_flow.to_json(),
-        'netIncomeFromContinuingOperations': net_income_from_continuing_operations.to_json(),
-        'freeCashFlow': free_cash_flow.to_json(),
+        'operatingCashFlow': json.dumps(operating_cash_flow),
+        'netIncomeFromContinuingOperations': json.dumps(net_income_from_operating_continuing_operations),
+        'freeCashFlow': json.dumps(free_cash_flow),
         'operatingCashFlowTTM': round(operating_cash_flow_ttm, 2),
         'netIncomeFromContinuingOperationsTTM': round(net_income_from_continuing_operations_ttm, 2),
         'freeCashFlowTTM': round(free_cash_flow_ttm, 2),
@@ -111,6 +97,81 @@ def finviz_data():
     }
 
     return jsonify({"code": 200, "data": data}), 200
+
+@app.route('/yfinance_data', methods=['GET'])
+def yfinance_data():
+    start = timer()
+    
+    stock = request.args.get('stock', default='AAPL')
+    ticker = yf.Ticker(stock)
+
+    last_close = ticker.history()['Close'].iloc[-1]
+    exchange_rate = 1
+
+    eps_next_5y = get_soup_fcf_growth_rate(stock)
+
+    yahoo_url = 'https://finance.yahoo.com/quote'
+    
+    #income statement
+    quarterly_income_statement = conversion(ticker.quarterly_income_stmt, exchange_rate)
+    annual_income_statement = conversion(ticker.income_stmt, exchange_rate)
+    total_revenue = annual_income_statement.loc['Total Revenue'][::-1]
+    income_statement_scraped = get_soup_income_statement_processor(f'{yahoo_url}/{stock}/financials?p={stock}', ticker)
+    income_statement_ttm = income_statement_scraped[1][1] if income_statement_scraped else quarterly_income_statement.loc['Total Revenue'][:-1].sum()
+    income_statement_ttm = conversion(process_yfinance_scraped_value(income_statement_ttm), exchange_rate)
+
+    #balance sheet
+    quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
+    cash_equivalent_and_short_term_investments = quarterly_balance_sheet.loc['Cash Cash Equivalents And Short Term Investments']
+
+    try:
+        current_debt = quarterly_balance_sheet.loc['Current Debt']
+    except KeyError:
+        current_debt = 0
+    long_term_debt = quarterly_balance_sheet.loc['Long Term Debt']
+    total_debt = current_debt + long_term_debt
+
+    #cash flow
+    quarterly_cash_flow = conversion(ticker.quarterly_cash_flow, exchange_rate)
+    annual_cash_flow = conversion(ticker.cash_flow, exchange_rate)
+    operating_cash_flow = annual_cash_flow.loc['Operating Cash Flow'][::-1]
+    net_income_from_continuing_operations = annual_cash_flow.loc['Net Income From Continuing Operations'][::-1]
+    free_cash_flow = annual_cash_flow.loc['Free Cash Flow'][::-1]
+
+    cash_flow_scraped_l1, hasCurrency = get_soup_cash_flow_level1_processor_and_currency(f'{yahoo_url}/{stock}/cash-flow?p={stock}', ticker)
+
+    #Currency
+    if hasCurrency:
+       exchange_rate = get_exchange_rate_to_usd(hasCurrency)
+
+    operating_cash_flow_ttm = cash_flow_scraped_l1[1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Operating Cash Flow'][:-1].sum()
+    operating_cash_flow_ttm = conversion(process_yfinance_scraped_value(operating_cash_flow_ttm), exchange_rate)
+
+    net_income_from_continuing_operations_ttm = income_statement_scraped[-1][1] if income_statement_scraped else quarterly_cash_flow.loc['Net Income From Continuing Operations'][:-1].sum()
+    net_income_from_continuing_operations_ttm = conversion(process_yfinance_scraped_value(net_income_from_continuing_operations_ttm), exchange_rate)
+    free_cash_flow_ttm = cash_flow_scraped_l1[-1][1] if cash_flow_scraped_l1 else quarterly_cash_flow.loc['Free Cash Flow'][:-1].sum()
+    free_cash_flow_ttm = conversion(process_yfinance_scraped_value(free_cash_flow_ttm), exchange_rate)
+    end = timer()
+    data = {
+        'timeTaken': end-start,
+        'epsNext5Y': float(eps_next_5y[:-1]),
+        'lastClose': round(last_close, 2),
+        # 'fullName': ticker.info["longName"], //.info currently not working because yahoo API end point change. Waiting for fix https://github.com/ranaroussi/yfinance/issues/1729#issuecomment-1793803181
+        'fullName': finvizfinance(stock).ticker_fundament()['Company'],
+        'totalRevenue': total_revenue.to_json(),
+        'incomeStatementTTM': round(income_statement_ttm, 2),
+        'cashEquivalentAndShortTermInvestments': cash_equivalent_and_short_term_investments.to_json(),
+        'totalDebt': total_debt.to_json(),
+        'operatingCashFlow': operating_cash_flow.to_json(),
+        'netIncomeFromContinuingOperations': net_income_from_continuing_operations.to_json(),
+        'freeCashFlow': free_cash_flow.to_json(),
+        'operatingCashFlowTTM': round(operating_cash_flow_ttm, 2),
+        'netIncomeFromContinuingOperationsTTM': round(net_income_from_continuing_operations_ttm, 2),
+        'freeCashFlowTTM': round(free_cash_flow_ttm, 2),
+    }
+
+    return jsonify({"code": 200, "data": data}), 200
+
 
 @app.route('/get_fcf_growth_rate_yr_1_to_5', methods=['GET'])
 def get_fcf_growth_rate_yr_1_to_5():

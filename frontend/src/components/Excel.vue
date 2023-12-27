@@ -130,10 +130,11 @@ export default {
     },
     watch: {
         yFinanceData() {
-            this.cashEquivalentAndShortTermInvestments = Object.values(this.yFinanceData['cashEquivalentAndShortTermInvestments'])[0];
+            const cashEquivalentData = Object.values(this.yFinanceData['cashEquivalentAndShortTermInvestments'])
+            this.cashEquivalentAndShortTermInvestments = Math.floor(cashEquivalentData[cashEquivalentData.length - 1]);
             this.valuationMethod = this.yFinanceData['operatingCashFlowTTM'];  
             this.fcf = this.yFinanceData['epsNext5Y'];
-            this.totalDebt = Object.values(this.yFinanceData['totalDebt'])[0];
+            this.totalDebt = Math.floor(Object.values(this.yFinanceData['totalDebt'])[0]);
             this.lastClose = this.yFinanceData['lastClose'];
             this.valuationMethodValue = this.yFinanceData['operatingCashFlowTTM'];
             this.freeCashFlowGrowthRateYr6To10Calculation(this.yFinanceData['epsNext5Y']);

@@ -68,8 +68,8 @@ export default {
             let values;
             return (dataKey, label, ttmKey, color) => {
                 if (this.yFinanceData[dataKey]) {
-                    timestamps = Object.keys(this.yFinanceData[dataKey]).map(Number);
-                    values = Object.values(this.yFinanceData[dataKey]).map(Number);
+                    timestamps = Object.keys(this.yFinanceData[dataKey]);
+                    values = Object.values(this.yFinanceData[dataKey]);
                     timestamps = timestamps.map((timestamp) => dayjs(timestamp).format('DD/MM/YY'));
                     timestamps.push('TTM');
                     values.push(this.yFinanceData[ttmKey]);
