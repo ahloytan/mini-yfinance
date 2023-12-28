@@ -26,7 +26,7 @@ Other libraries: yfinance, finviz
 4. Note: If you want to deploy a replica, please be reminded to set an environment variable (key="ENV" and value="production") in the Vercel settings page
 
 ## Deployment
-1. Go to frontend folder. Type "vercel ." and "vercel --prod" after
+1. Go to frontend folder. Type "npm run build", followed by "vercel ." and "vercel --prod" after
 2. Go to backend folder. Type "vercel ." and "vercel --prod" after
 
 # Contact

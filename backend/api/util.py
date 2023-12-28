@@ -28,7 +28,7 @@ def is_float(string):
     except ValueError:
         return 0
 
-def index_of_property_in_json(json, property):
+def index_of_property_in_json(property, json):
     return next((i for i, d in enumerate(json) if property in d), None)
 
 def generateParams(stock, keys, period2Value):

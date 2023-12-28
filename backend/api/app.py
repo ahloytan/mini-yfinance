@@ -8,8 +8,10 @@ from timeit import default_timer as timer
 
 if os.getenv('ENV') == 'production':
     from .util import *
+    from .methods import *
 else:
     from util import *
+    from methods import *
 
 app = Flask(__name__)
 CORS(app)
@@ -18,8 +20,8 @@ CORS(app)
 def health_check():
     return "ok"
 
-@app.route('/yfinance_data_v1', methods=['GET'])
-def yfinance_data_v1():
+@app.route('/yfinance_data', methods=['GET'])
+def yfinance_data():
     stock = request.args.get('stock', default='AAPL')
     ticker = yf.Ticker(stock)
     last_close = ticker.history()['Close'].iloc[-1]
@@ -33,7 +35,6 @@ def yfinance_data_v1():
         total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = get_income_statement_data(stock)
     except Exception as e:
         return jsonify({'error': f'An error occurred: {str(e)}'})   
-
 
     #balance sheet
     try:
@@ -98,8 +99,8 @@ def finviz_data():
 
     return jsonify({"code": 200, "data": data}), 200
 
-@app.route('/yfinance_data', methods=['GET'])
-def yfinance_data():
+@app.route('/yfinance_data_v0', methods=['GET'])
+def yfinance_data_v0():
     start = timer()
     
     stock = request.args.get('stock', default='AAPL')
