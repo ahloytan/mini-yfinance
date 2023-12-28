@@ -1,12 +1,31 @@
 import requests
 import os
+from flask import jsonify
 
 if os.getenv('ENV') == 'production':
-    from .util import *
+    from .util import conversion, get_exchange_rate_to_usd, index_of_property_in_json, generateParams
+    from .variables import *
 else:
     from util import *
+    from variables import *
 
-financials_api_url = f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/'
+def get_company_name(stock):
+    keys = ['longName', 'shortName']
+    params = {
+        'formatted': 'true',
+        'crumb': '1DOWVhBLaD.',
+        'lang': 'en-US',
+        'region': 'US',
+        'fields': ','.join(keys),
+        'symbols': stock,
+        'corsDomain': 'finance.yahoo.com',
+    }
+    response = requests.get(summary_api_url, params=params, headers=headers)
+    if response.status_code == 200:
+        full_name = response.json()['quoteResponse']['result'][0]['longName']
+        return full_name
+    
+    return 'Error Retrieving Name'
 
 def get_income_statement_data(stock):
     total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = 0, 0, 0, 0, 1
@@ -74,7 +93,7 @@ def get_cash_flow_data(stock, exchange_rate):
 
 def get_eps_next_5y(stock):
     eps_next_5y = '0%'
-    end_point = f'https://query1.finance.yahoo.com/v10/finance/quoteSummary/{stock}'
+    end_point = f'{eps_api_url}{stock}'
     params = {
         'formatted': 'true',
         'crumb': '1DOWVhBLaD.',

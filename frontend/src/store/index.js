@@ -33,7 +33,7 @@ const store = createStore({
           method: 'GET',
           url: 'yfinance_data',
           params: {
-            stock: stock
+            stock: stock || 'AAPL'
           }
         })
         
@@ -56,7 +56,7 @@ const store = createStore({
           method: 'GET',
           url: 'finviz_data',
           params: {
-            stock: stock
+            stock: stock || 'AAPL'
           }
         })
 
