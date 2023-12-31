@@ -1,6 +1,5 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request
-import yfinance as yf
 from finvizfinance.quote import finvizfinance
 import os
 import json
@@ -11,6 +10,9 @@ if os.getenv('ENV') == 'production':
     from .methods import *
     from .variables import yahoo_url, default_stock
 else:
+    import yfinance as yf
+    from concurrent.futures import ThreadPoolExecutor
+    from functools import partial
     from util import *
     from methods import *
     from variables import yahoo_url, default_stock
@@ -22,16 +24,69 @@ CORS(app)
 def health_check():
     return "ok"
 
+@app.route('/yfinance_data_v1', methods=['GET'])
+def yfinance_data_v1():
+    try:
+        start = timer()
+        stock = request.args.get('stock', default=default_stock)
+        ticker = yf.Ticker(stock)   
+        last_close = ticker.history()['Close'].iloc[-1]     
+
+        total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = get_income_statement_data(stock)
+        quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
+        try:
+            current_debt = quarterly_balance_sheet.loc['Current Debt']
+        except KeyError:
+            current_debt = 0
+        long_term_debt = quarterly_balance_sheet.loc['Long Term Debt']
+        total_debt = current_debt + long_term_debt
+
+        functions  = [
+            partial(get_company_name_and_last_close, stock), 
+            partial(get_eps_next_5y, stock), 
+            partial(get_balance_sheet_data, stock, exchange_rate), 
+            partial(get_cash_flow_data, stock, exchange_rate)
+        ]
+
+        max_workers = 2
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {executor.submit(func): func for func in functions}
+            for future in futures:
+                future.result()
+
+        end = timer()
+        data = {
+            'timeTaken': end-start,
+            # 'epsNext5Y': float(eps_next_5y[:-1]),
+            'lastClose': round(last_close, 2),
+            # 'fullName': full_name,
+            'totalRevenue': json.dumps(total_revenue),
+            'incomeStatementTTM': round(income_statement_ttm, 2),
+            # 'cashEquivalentAndShortTermInvestments': json.dumps(cash_equivalent_and_short_term_investments),
+            'totalDebt': total_debt.to_json(),
+            # 'operatingCashFlow': json.dumps(operating_cash_flow),
+            'netIncomeFromContinuingOperations': json.dumps(net_income_from_operating_continuing_operations),
+            # 'freeCashFlow': json.dumps(free_cash_flow),
+            # 'operatingCashFlowTTM': round(operating_cash_flow_ttm, 2),
+            'netIncomeFromContinuingOperationsTTM': round(net_income_from_continuing_operations_ttm, 2),
+            # 'freeCashFlowTTM': round(free_cash_flow_ttm, 2),
+        }
+
+        return jsonify({"code": 200, "data": data}), 200
+    
+    except Exception as e:
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500   
+
 @app.route('/yfinance_data', methods=['GET'])
 def yfinance_data():
     try:
+        start = timer()
         stock = request.args.get('stock', default=default_stock)
-        ticker = yf.Ticker(stock)
-        last_close = ticker.history()['Close'].iloc[-1]
         exchange_rate = 1
 
         #company name
-        full_name = get_company_name(stock)
+        full_name, last_close = get_company_name_and_last_close(stock)
 
         #eps
         eps_next_5y = get_eps_next_5y(stock)
@@ -40,27 +95,20 @@ def yfinance_data():
         total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = get_income_statement_data(stock)
 
         #balance sheet
-        cash_equivalent_and_short_term_investments = get_balance_sheet_data(stock, exchange_rate)
-        quarterly_balance_sheet = conversion(ticker.quarterly_balance_sheet, exchange_rate)
-
-        try:
-            current_debt = quarterly_balance_sheet.loc['Current Debt']
-        except KeyError:
-            current_debt = 0
-        long_term_debt = quarterly_balance_sheet.loc['Long Term Debt']
-        total_debt = current_debt + long_term_debt
+        cash_equivalent_and_short_term_investments, total_debt = get_balance_sheet_data(stock, exchange_rate)
 
         #cash flow
         operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = get_cash_flow_data(stock, exchange_rate)
-
+        end = timer()
         data = {
+            'timeTaken': end-start,
             'epsNext5Y': float(eps_next_5y[:-1]),
             'lastClose': round(last_close, 2),
             'fullName': full_name,
             'totalRevenue': json.dumps(total_revenue),
             'incomeStatementTTM': round(income_statement_ttm, 2),
             'cashEquivalentAndShortTermInvestments': json.dumps(cash_equivalent_and_short_term_investments),
-            'totalDebt': total_debt.to_json(),
+            'totalDebt': json.dumps(total_debt), #Total debt is calculated using Current Debt + Long Term Debt (excluding Long Term Capital Lease Obligation)
             'operatingCashFlow': json.dumps(operating_cash_flow),
             'netIncomeFromContinuingOperations': json.dumps(net_income_from_operating_continuing_operations),
             'freeCashFlow': json.dumps(free_cash_flow),
@@ -132,7 +180,7 @@ def yfinance_data_v0():
         except KeyError:
             current_debt = 0
         long_term_debt = quarterly_balance_sheet.loc['Long Term Debt']
-        total_debt = current_debt + long_term_debt
+        total_debt = current_debt.add(long_term_debt, fill_value=0)
 
         #cash flow
         quarterly_cash_flow = conversion(ticker.quarterly_cash_flow, exchange_rate)

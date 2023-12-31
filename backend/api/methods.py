@@ -9,8 +9,8 @@ else:
     from util import *
     from variables import *
 
-def get_company_name(stock):
-    keys = ['longName', 'shortName']
+def get_company_name_and_last_close(stock):
+    keys = ['longName', 'shortName', 'regularMarketPrice']
     params = {
         'formatted': 'true',
         'crumb': '1DOWVhBLaD.',
@@ -23,7 +23,8 @@ def get_company_name(stock):
     response = requests.get(summary_api_url, params=params, headers=headers)
     if response.status_code == 200:
         full_name = response.json()['quoteResponse']['result'][0]['longName']
-        return full_name
+        last_close = response.json()['quoteResponse']['result'][0]['regularMarketPrice']['raw']
+        return full_name, last_close
     
     return 'Error Retrieving Name'
 
@@ -56,8 +57,8 @@ def get_income_statement_data(stock):
 
 def get_balance_sheet_data(stock, exchange_rate):
     cash_equivalent_and_short_term_investments = 0
-    keys = ['quarterlyCashCashEquivalentsAndShortTermInvestments']
-    params = generateParams(stock, keys, '1703510062')
+    keys = ['quarterlyCashCashEquivalentsAndShortTermInvestments', 'quarterlyLongTermDebt', 'quarterlyCurrentDebtAndCapitalLeaseObligation']
+    params = generateParams(stock, keys, '1704029503')
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
@@ -67,7 +68,24 @@ def get_balance_sheet_data(stock, exchange_rate):
             entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
             for entry in data[index_of_property_in_json(keys[0], data)][keys[0]]
         }
-    return cash_equivalent_and_short_term_investments
+
+        #debt
+        quarterly_long_term_debt = {
+            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
+            for entry in data[index_of_property_in_json(keys[1], data)][keys[1]]
+        }
+
+        quarterly_current_debt = {
+            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
+            for entry in data[index_of_property_in_json(keys[2], data)][keys[2]] if entry
+        }
+    
+        total_debt = {
+            key: quarterly_long_term_debt[key] + quarterly_current_debt.get(key, 0)
+            for key in quarterly_long_term_debt
+        }
+
+    return cash_equivalent_and_short_term_investments,total_debt
 
 def get_cash_flow_data(stock, exchange_rate):
     operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = 0, 0, 0, 0
