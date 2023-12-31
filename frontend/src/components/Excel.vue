@@ -4,7 +4,7 @@
         <SearchBar />
         <div class="md:flex items-center justify-center">
             <div class="p-4">
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="countries" class="w-full text-left">Select Option:</label>
                     <select id="countries" v-model="valuationMethod" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5">
                         <option :value="yFinanceData['operatingCashFlowTTM']" selected>Discounted Cash Flow ({{ yFinanceData['operatingCashFlowTTM'] }})</option>
@@ -13,19 +13,19 @@
                         <option value="0">Enter Value Below</option>
                     </select>
                 </div>
-                <div v-if="valuationMethod == 0" class="max-w-md flex items-center my-6">
+                <div v-if="valuationMethod == 0" class="max-w-md flex items-center my-6 mx-auto">
                     <label for="valuationMethod" class="w-full text-left">Enter Valuation:</label>
                     <input v-model="enteredValuation" type="number" id="valuationMethod" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="totalDebt" class="w-full text-left">Total Debt:</label>
                     <input v-model="totalDebt" type="number" id="totalDebt" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="cashShortTermInvestments" class="w-full text-left">Cash & Short Term Investments:</label>
                     <input v-model="cashEquivalentAndShortTermInvestments" type="number" id="cashShortTermInvestments" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="countries" class="w-full text-left">FCF Growth Rate (Yr 1-5):</label>
                     <select id="fcf" v-model="fcf" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
                         <option :value="yFinanceData['epsNext5Y']">Yahoo Finance ({{ yFinanceData['epsNext5Y'] }}%)</option>
@@ -34,23 +34,23 @@
                         <option value="-1" selected>Enter Value Below</option>
                     </select>
                 </div>
-                <div v-if="fcf == -1" class="max-w-md flex items-center my-6">
+                <div v-if="fcf == -1" class="max-w-md flex items-center my-6 mx-auto">
                     <label for="fcfGrowthRateYr1To5" class="w-full text-left">Enter FCF:</label>
                     <input v-model="freeCashFlowGrowthRateYr1To5" type="number" id="fcfGrowthRateYr1To5" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="fcfGrowthRateYr6To10" class="w-full text-left">FCF Growth Rate (Yr 6-10):</label>
                     <input v-model="freeCashFlowGrowthRateYr6To10" type="number" id="fcfGrowthRateYr6To10" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="fcfGrowthRateYr11To20" class="w-full text-left">FCF Growth Rate (Yr 11-20):</label>
                     <input v-model="freeCashFlowGrowthRateYr11To20" type="number" id="fcfGrowthRateYr11To20" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div>
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="discountRate" class="w-full text-left">Discount Rate:</label>
                     <input v-model=discountRate type="number" id="discountRate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div> 
-                <div class="max-w-md flex items-center my-6">
+                <div class="max-w-md flex items-center my-6 mx-auto">
                     <label for="lastClose" class="w-full text-left">Last Close:</label>
                     <input v-model="lastClose" type="number" id="lastClose" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 blockw-max p-2.5" required>
                 </div> 
