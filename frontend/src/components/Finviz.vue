@@ -61,7 +61,7 @@ import { mapActions, mapGetters } from 'vuex';
 
 export default {
     name: 'Finviz',
-    async mounted(){
+    async created(){
         await this.getFinvizData();
     },
     computed: {

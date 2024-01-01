@@ -21,7 +21,6 @@
   }
 }
 
-
 @media only screen and (min-width: 1400px){
   #notfound img {
     width: 45%;

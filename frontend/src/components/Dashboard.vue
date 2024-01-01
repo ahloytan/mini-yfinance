@@ -58,7 +58,7 @@ export default {
             }
         }
     },
-    async mounted(){
+    async created(){
         await this.getYFinanceData();
     },
     computed: {
@@ -77,8 +77,7 @@ export default {
 
                 return {
                     labels: timestamps,
-                    datasets: [{ label, data: values, borderColor: color, backgroundColor: color,}],
-                    
+                    datasets: [{ label, data: values, borderColor: color, backgroundColor: color,}]
                 };
             }
         },
