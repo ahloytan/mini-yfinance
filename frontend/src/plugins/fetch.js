@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 let axiosConfig = {
-  baseURL: import.meta.env.VITE_BASE_URL === 'prod' ? 'https://mini-yfinance-backend.vercel.app': 'http://localhost:5000/',
+  baseURL: import.meta.env.VITE_BASE_URL === 'prod' ? import.meta.env.VITE_ENDPOINT: 'http://localhost:5000/',
 };
 
 let axiosAgent = axios.create(axiosConfig);
