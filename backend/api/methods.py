@@ -123,7 +123,7 @@ def get_eps_next_5y(stock):
     
     response = requests.get(end_point, params=params, headers=headers)
     if response.status_code == 200:        
-        eps_next_5y = response.json()['quoteSummary']['result'][0]['earningsTrend']['trend'][-2]['growth']['fmt']
+        eps_next_5y = response.json()['quoteSummary']['result'][0]['earningsTrend']['trend'][-2]['growth'].get('fmt', "0%")
         return eps_next_5y
     else:
         return jsonify({'error': f'Request failed with status code {response}'})
