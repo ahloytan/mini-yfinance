@@ -3,7 +3,7 @@ import os
 from flask import jsonify
 
 if os.getenv('ENV') == 'production':
-    from .util import conversion, get_exchange_rate_to_usd, index_of_property_in_json, generateParams
+    from .util import conversion, get_exchange_rate_to_usd, index_of_property_in_json, generate_params, extract_data
     from .variables import *
 else:
     from util import *
@@ -32,7 +32,7 @@ def get_income_statement_data(stock):
     total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = 0, 0, 0, 0, 1
     keys = ['annualOperatingRevenue', 'trailingNetIncomeFromContinuingOperationNetMinorityInterest', 'trailingOperatingRevenue', 'annualNetIncomeFromContinuingOperationNetMinorityInterest']
     hasCurrency = None
-    params = generateParams(stock, keys)
+    params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
@@ -55,7 +55,7 @@ def get_income_statement_data(stock):
 def get_balance_sheet_data(stock, exchange_rate):
     cash_equivalent_and_short_term_investments = 0
     keys = ['quarterlyCashCashEquivalentsAndShortTermInvestments', 'quarterlyLongTermDebt', 'quarterlyCurrentDebtAndCapitalLeaseObligation']
-    params = generateParams(stock, keys)
+    params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
@@ -78,7 +78,7 @@ def get_balance_sheet_data(stock, exchange_rate):
 def get_cash_flow_data(stock, exchange_rate):
     operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = 0, 0, 0, 0
     keys = ['trailingFreeCashFlow','annualFreeCashFlow','annualOperatingCashFlow','trailingOperatingCashFlow']
-    params = generateParams(stock, keys)
+    params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
     

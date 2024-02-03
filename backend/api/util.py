@@ -32,7 +32,7 @@ def is_float(string):
 def index_of_property_in_json(property, json):
     return next((i for i, d in enumerate(json) if property in d), None)
 
-def generateParams(stock, keys):
+def generate_params(stock, keys):
     now = datetime.datetime.now()
 
     start_timestamp = int((now - datetime.timedelta(days=365*5)).timestamp())
