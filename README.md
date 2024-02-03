@@ -27,7 +27,7 @@ Other libraries: yfinance, finviz, beautifulsoup
 
 ## Deployment
 1. Go to frontend folder. Type `npm run build`, followed by `vercel .` and `vercel --prod` after
-2. Go to backend folder. Type `vercel .` and `vercel --prod` after
+2. Go to the root of the backend folder. Type `vercel .` and `vercel --prod` after
 
 # Contact
 1. To explore more of my works, head over to [Portfolio Website](https://ahloytan.netlify.app)

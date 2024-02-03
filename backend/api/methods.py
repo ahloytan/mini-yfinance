@@ -32,7 +32,7 @@ def get_income_statement_data(stock):
     total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = 0, 0, 0, 0, 1
     keys = ['annualOperatingRevenue', 'trailingNetIncomeFromContinuingOperationNetMinorityInterest', 'trailingOperatingRevenue', 'annualNetIncomeFromContinuingOperationNetMinorityInterest']
     hasCurrency = None
-    params = generateParams(stock, keys, '1703494636')
+    params = generateParams(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
@@ -42,69 +42,52 @@ def get_income_statement_data(stock):
         if hasCurrency and hasCurrency != 'USD':
             exchange_rate = get_exchange_rate_to_usd(hasCurrency)
 
-        total_revenue = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[0], data)][keys[0]]
-        }
+        total_revenue = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
+
         net_income_from_continuing_operations_ttm = conversion(data[index_of_property_in_json(keys[1], data)][keys[1]][0]['reportedValue']['raw'], exchange_rate)
+
         income_statement_ttm = conversion(data[index_of_property_in_json(keys[2], data)][keys[2]][0]['reportedValue']['raw'], exchange_rate)
-        net_income_from_operating_continuing_operations = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[3], data)][keys[3]]
-        }
+
+        net_income_from_operating_continuing_operations = extract_data(data, keys[3], index_of_property_in_json(keys[3], data), exchange_rate)
 
     return total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate
 
 def get_balance_sheet_data(stock, exchange_rate):
     cash_equivalent_and_short_term_investments = 0
     keys = ['quarterlyCashCashEquivalentsAndShortTermInvestments', 'quarterlyLongTermDebt', 'quarterlyCurrentDebtAndCapitalLeaseObligation']
-    params = generateParams(stock, keys, '1704029503')
+    params = generateParams(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
-        cash_equivalent_and_short_term_investments = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[0], data)][keys[0]]
-        }
+
+        cash_equivalent_and_short_term_investments = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
 
         #debt
-        quarterly_long_term_debt = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[1], data)][keys[1]]
-        }
+        quarterly_long_term_debt = extract_data(data, keys[1], index_of_property_in_json(keys[1], data), exchange_rate)
+        quarterly_current_debt = extract_data(data, keys[2], index_of_property_in_json(keys[2], data), exchange_rate)
 
-        quarterly_current_debt = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[2], data)][keys[2]] if entry
-        }
-    
         total_debt = {
             key: quarterly_long_term_debt[key] + quarterly_current_debt.get(key, 0)
             for key in quarterly_long_term_debt
         }
 
-    return cash_equivalent_and_short_term_investments,total_debt
+    return cash_equivalent_and_short_term_investments, total_debt
 
 def get_cash_flow_data(stock, exchange_rate):
     operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = 0, 0, 0, 0
     keys = ['trailingFreeCashFlow','annualFreeCashFlow','annualOperatingCashFlow','trailingOperatingCashFlow']
-    params = generateParams(stock, keys, '1703510062')
+    params = generateParams(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
     
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
         free_cash_flow_ttm = conversion(data[index_of_property_in_json(keys[0], data)][keys[0]][0]['reportedValue']['raw'], exchange_rate)
-        free_cash_flow = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[1], data)][keys[1]]
-        }
-        operating_cash_flow = {
-            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
-            for entry in data[index_of_property_in_json(keys[2], data)][keys[2]]
-        }
+        free_cash_flow = extract_data(data, keys[1], index_of_property_in_json(keys[1], data), exchange_rate)
+
+        operating_cash_flow = extract_data(data, keys[2], index_of_property_in_json(keys[2], data), exchange_rate)
         operating_cash_flow_ttm = conversion(data[index_of_property_in_json(keys[3], data)][keys[3]][0]['reportedValue']['raw'], exchange_rate)
 
     return operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm

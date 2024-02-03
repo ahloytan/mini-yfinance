@@ -1,18 +1,20 @@
 import { createStore } from 'vuex';
 import { fetch } from '../plugins/fetch';
 
+const DEFAULT_STOCK = 'AAPL';
+
 const store = createStore({
   state () {
     return {
       yFinanceData: {},
       finvizData: {},
-      loading: false
+      isLoading: false
     }
   },
   getters: {
     yFinanceData: state => state.yFinanceData,
     finvizData: state => state.finvizData,
-    loading: state => state.loading
+    isLoading: state => state.isLoading
   },
   mutations: {
     setYFinanceData(state, yFinanceData) {
@@ -22,7 +24,7 @@ const store = createStore({
       state.finvizData = finvizData;
     },
     setLoadingStatus(state, status) {
-      state.loading = status;
+      state.isLoading = status;
     },
   },
   actions: {
@@ -33,7 +35,7 @@ const store = createStore({
           method: 'GET',
           url: 'yfinance_data',
           params: {
-            stock: stock || 'AAPL'
+            stock: stock || DEFAULT_STOCK
           }
         })
         
@@ -56,7 +58,7 @@ const store = createStore({
           method: 'GET',
           url: 'finviz_data',
           params: {
-            stock: stock || 'AAPL'
+            stock: stock || DEFAULT_STOCK
           }
         })
 

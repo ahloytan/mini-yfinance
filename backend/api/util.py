@@ -1,3 +1,4 @@
+import datetime
 import requests
 from bs4 import BeautifulSoup
 import os
@@ -31,7 +32,12 @@ def is_float(string):
 def index_of_property_in_json(property, json):
     return next((i for i, d in enumerate(json) if property in d), None)
 
-def generateParams(stock, keys, period2Value):
+def generateParams(stock, keys):
+    now = datetime.datetime.now()
+
+    start_timestamp = int((now - datetime.timedelta(days=365*5)).timestamp())
+    end_timestamp = int(now.timestamp())
+
     return {
         'lang': 'en-US',
         'region': 'US',
@@ -39,10 +45,19 @@ def generateParams(stock, keys, period2Value):
         'padTimeSeries': 'true',
         'merge': 'false',
         'type': ','.join(keys),
-        'period1': '493590046',
-        'period2': period2Value,
+        'period1': start_timestamp,
+        'period2': end_timestamp,
         'corsDomain': 'finance.yahoo.com',
     }
+
+def extract_data(data, key, index, exchange_rate):
+    if index is None:
+        return {}
+    else:
+        return {
+            entry['asOfDate']: conversion(entry['reportedValue']['raw'], exchange_rate)
+            for entry in data[index][key] if entry
+        }
 
 #v0 methods
 def get_soup(url):
