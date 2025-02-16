@@ -1,5 +1,5 @@
 <template>
-    <LoadingScreen v-if="loading"/>
+    <LoadingScreen v-if="isLoading"/>
     <div class="md:h-screen">
         <SearchBar />
         <div class="md:flex items-center justify-center">
@@ -147,7 +147,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['yFinanceData', 'finvizData', 'loading']),
+        ...mapGetters(['yFinanceData', 'finvizData', 'isLoading']),
         numOutstandingShares() {
             const shsOutstanding = this.finvizData['shsOutstanding'];
             const denomination = shsOutstanding ? shsOutstanding.slice(-1) : 0;

@@ -1,5 +1,5 @@
 <template>
-    <LoadingScreen v-if="loading"/>
+    <LoadingScreen v-if="isLoading"/>
     <SearchBar />
     <div class="md:columns-2 p-4 md:px-16 2xl:px-64">
         <div class="chart mx-auto md:p-8">
@@ -30,7 +30,9 @@
             />
         </div>
     </div>
-    <Finviz />
+    <div ref="lazyLoadTarget">
+        <Finviz v-if="isInView"/>
+    </div>
 </template>
 <script>
 import Finviz from './Finviz.vue'
@@ -55,14 +57,15 @@ export default {
             chartOptions: {
                 responsive: true,
                 // maintainAspectRatio: false
-            }
+            },
+            isInView: false,
         }
     },
     async created(){
         await this.getYFinanceData();
     },
     computed: {
-        ...mapGetters(['yFinanceData', 'loading']),
+        ...mapGetters(['yFinanceData', 'isLoading']),
         prepareChartData() {
             let timestamps;
             let values;
@@ -84,7 +87,19 @@ export default {
     },
     methods: {
         ...mapActions(['getYFinanceData', 'getFinvizData']),
-    }
+    },
+    mounted() {
+        const observer = new IntersectionObserver(([entry]) => {
+                if (entry.isIntersecting) {
+                    this.isInView = true;
+                    observer.disconnect(); // Stop observing after loading
+                }
+            },
+            { threshold: 0.1 });
+
+        const target = this.$refs.lazyLoadTarget;
+        if (target) observer.observe(target);
+    },
 }
 </script>
 <style>

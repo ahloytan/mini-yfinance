@@ -27,7 +27,7 @@
         </div>
         <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
           <div class="flex flex-shrink-0 items-center">
-            <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company" width="40" height="40">
+            <img class="h-8 w-auto" src="../assets/tailwind.png" alt="Tailwind" width="40" height="40">
           </div>
           <div class="hidden sm:ml-6 sm:block">
             <div class="flex space-x-4">
@@ -51,7 +51,7 @@
           <div class="relative ml-3">
             <div>
               <button type="button" class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-                <a href="https://magiceden.io/item-details/polygon/0x50d2915927255109570d9f72ebeb8cb477df508e/277"  target="_blank" aria-label="Magic Eden">
+                <a href="https://sentx.io/nft-manager/dead-pixels-ghost-club/4423"  target="_blank" aria-label="Magic Eden">
                   <span class="absolute -inset-1.5"></span>
                 </a>
                 <span class="sr-only">Open user menu</span>
