@@ -206,16 +206,16 @@ export default {
         ...mapActions(['getYFinanceData', 'getFinvizData']),
         discountRateCalculation(betaVal) {
             const beta = betaVal || 0;
-
-            if (beta < 1) return 5.0;
-            if (beta < 1.1) return 5.8;
-            if (beta < 1.2) return 6.2;
+  
+            if (beta < 1) return 5.4;
+            if (beta < 1.1) return 6.0;
+            if (beta < 1.2) return 6.3;
             if (beta < 1.3) return 6.6;
-            if (beta < 1.4) return 7.0;
-            if (beta < 1.5) return 7.4;
-            if (beta <= 1.6) return 7.8;
+            if (beta < 1.4) return 6.9;
+            if (beta < 1.5) return 7.2;
+            if (beta <= 1.6) return 7.5;
 
-            return 8.2
+            return 7.8
         },
         freeCashFlowGrowthRateYr6To10Calculation(epsNext5Y) {
             this.freeCashFlowGrowthRateYr6To10 = epsNext5Y / 2;
