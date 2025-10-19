@@ -50,10 +50,10 @@ def get_income_statement_data(stock):
 
         net_income_from_operating_continuing_operations = extract_data(data, keys[3], index_of_property_in_json(keys[3], data), exchange_rate)
 
-    return total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate
+    return total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations
 
-def get_balance_sheet_data(stock, exchange_rate):
-    cash_equivalent_and_short_term_investments = 0
+def get_balance_sheet_data(stock):
+    cash_equivalent_and_short_term_investments, exchange_rate = 0, 1
     keys = ['quarterlyCashCashEquivalentsAndShortTermInvestments', 'quarterlyLongTermDebt', 'quarterlyCurrentDebtAndCapitalLeaseObligation']
     params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
@@ -61,6 +61,9 @@ def get_balance_sheet_data(stock, exchange_rate):
 
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
+        hasCurrency = data[index_of_property_in_json(keys[0], data)][keys[0]][0]['currencyCode']
+        if hasCurrency and hasCurrency != 'USD':
+            exchange_rate = get_exchange_rate_to_usd(hasCurrency)
 
         cash_equivalent_and_short_term_investments = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
 
@@ -75,8 +78,8 @@ def get_balance_sheet_data(stock, exchange_rate):
 
     return cash_equivalent_and_short_term_investments, total_debt
 
-def get_cash_flow_data(stock, exchange_rate):
-    operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = 0, 0, 0, 0
+def get_cash_flow_data(stock):
+    operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm, exchange_rate = 0, 0, 0, 0, 1
     keys = ['trailingFreeCashFlow','annualFreeCashFlow','annualOperatingCashFlow','trailingOperatingCashFlow']
     params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
@@ -84,6 +87,10 @@ def get_cash_flow_data(stock, exchange_rate):
     
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
+        hasCurrency = data[index_of_property_in_json(keys[0], data)][keys[0]][0]['currencyCode']
+        if hasCurrency and hasCurrency != 'USD':
+            exchange_rate = get_exchange_rate_to_usd(hasCurrency)
+
         free_cash_flow_ttm = conversion(data[index_of_property_in_json(keys[0], data)][keys[0]][0]['reportedValue']['raw'], exchange_rate)
         free_cash_flow = extract_data(data, keys[1], index_of_property_in_json(keys[1], data), exchange_rate)
 

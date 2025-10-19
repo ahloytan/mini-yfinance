@@ -1,4 +1,3 @@
 Flask==2.3.2
 Flask-Cors==4.0.0
-yfinance==0.2.36
 finvizfinance==0.14.7
