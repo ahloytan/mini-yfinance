@@ -38,8 +38,15 @@ export default {
         ...mapActions(['getYFinanceData', 'getFinvizData']),
         async handleSubmit(event) {
             event.preventDefault();
-            await this.getYFinanceData(this.stock);
-            await this.getFinvizData(this.stock);
+
+            try {
+                await this.getYFinanceData(this.stock);
+                await this.getFinvizData(this.stock);
+                this.$toast.success(this.$toastMsg.SUCCESS);
+                
+            } catch (error) {
+                this.$toast.error(this.$toastMsg.TICKER_NOT_FOUND);
+            }
         },
         handleKeyDown(event) {
             if (event.key === 'Backspace') {

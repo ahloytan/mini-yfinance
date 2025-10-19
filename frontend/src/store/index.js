@@ -56,6 +56,8 @@ const store = createStore({
         commit('setYFinanceData', data);
       } catch (error) {
         console.log(error);
+        throw new Error(error);
+
       } finally {
 
         commit('setLoadingStatus', false);
@@ -72,8 +74,10 @@ const store = createStore({
         })
 
         commit('setFinvizData', data);
+        
       } catch (error) {
         console.log(error);
+        throw new Error(error);
       }
     },
   }

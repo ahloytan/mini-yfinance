@@ -125,8 +125,15 @@ export default {
         }
     },
     async mounted(){
-        await this.getFinvizData();
-        await this.getYFinanceData();
+        try {
+            await this.getFinvizData();
+            await this.getYFinanceData();
+            this.$toast.success(this.$toastMsg.SUCCESS);
+
+        } catch (error) {
+            this.$toast.success(this.$toastMsg.ERROR);
+        }
+
     },
     watch: {
         yFinanceData() {

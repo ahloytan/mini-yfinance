@@ -62,7 +62,14 @@ import { mapActions, mapGetters } from 'vuex';
 export default {
     name: 'Finviz',
     async created(){
-        await this.getFinvizData();
+
+        try {
+            await this.getFinvizData();
+            this.$toast.success(this.$toastMsg.SUCCESS);
+            
+        } catch (error) {
+            this.$toast.success(this.$toastMsg.ERROR);
+        }
     },
     computed: {
         ...mapGetters(['finvizData']),

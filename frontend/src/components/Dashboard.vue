@@ -62,7 +62,14 @@ export default {
         }
     },
     async created(){
-        await this.getYFinanceData();
+
+        try {
+            await this.getYFinanceData();
+            this.$toast.success(this.$toastMsg.SUCCESS);
+
+        } catch (error) {
+            this.$toast.error(this.$toastMsg.ERROR);
+        }
     },
     computed: {
         ...mapGetters(['yFinanceData', 'isLoading']),
