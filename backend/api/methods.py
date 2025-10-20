@@ -3,7 +3,7 @@ import os
 from flask import jsonify
 
 if os.getenv('ENV') == 'production':
-    from .util import conversion, get_exchange_rate_to_usd, index_of_property_in_json, generate_params, extract_data
+    from .util import conversion, get_exchange_rate_to_usd, get_exchange_rate_helper, index_of_property_in_json, generate_params, generate_search_params, extract_data
     from .variables import *
 else:
     from util import *
@@ -22,8 +22,9 @@ def get_company_name_and_last_close(stock):
     }
     response = requests.get(summary_api_url, params=params, headers=headers)
     if response.status_code == 200:
-        full_name = response.json()['quoteResponse']['result'][0]['longName']
-        last_close = response.json()['quoteResponse']['result'][0]['regularMarketPrice']['raw']
+        result = response.json()['quoteResponse']['result'][0]
+        full_name = result['longName'] if result['longName'] else result['shortName']
+        last_close = result['regularMarketPrice']['raw']
         return full_name, last_close
     
     return 'Error Retrieving Name'
@@ -31,16 +32,13 @@ def get_company_name_and_last_close(stock):
 def get_income_statement_data(stock):
     total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations, exchange_rate = 0, 0, 0, 0, 1
     keys = ['annualOperatingRevenue', 'trailingNetIncomeFromContinuingOperationNetMinorityInterest', 'trailingOperatingRevenue', 'annualNetIncomeFromContinuingOperationNetMinorityInterest']
-    hasCurrency = None
     params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
 
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
-        hasCurrency = data[index_of_property_in_json(keys[0], data)][keys[0]][0]['currencyCode']
-        if hasCurrency and hasCurrency != 'USD':
-            exchange_rate = get_exchange_rate_to_usd(hasCurrency)
+        exchange_rate = get_exchange_rate_helper(data, keys[0])
 
         total_revenue = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
 
@@ -61,9 +59,7 @@ def get_balance_sheet_data(stock):
 
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
-        hasCurrency = data[index_of_property_in_json(keys[0], data)][keys[0]][0]['currencyCode']
-        if hasCurrency and hasCurrency != 'USD':
-            exchange_rate = get_exchange_rate_to_usd(hasCurrency)
+        exchange_rate = get_exchange_rate_helper(data, keys[0])
 
         cash_equivalent_and_short_term_investments = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
 
@@ -87,9 +83,7 @@ def get_cash_flow_data(stock):
     
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
-        hasCurrency = data[index_of_property_in_json(keys[0], data)][keys[0]][0]['currencyCode']
-        if hasCurrency and hasCurrency != 'USD':
-            exchange_rate = get_exchange_rate_to_usd(hasCurrency)
+        exchange_rate = get_exchange_rate_helper(data, keys[0])
 
         free_cash_flow_ttm = conversion(data[index_of_property_in_json(keys[0], data)][keys[0]][0]['reportedValue']['raw'], exchange_rate)
         free_cash_flow = extract_data(data, keys[1], index_of_property_in_json(keys[1], data), exchange_rate)

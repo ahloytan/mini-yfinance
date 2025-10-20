@@ -21,6 +21,15 @@ def get_exchange_rate_to_usd(currency):
         return data['InterbankAmount']
     except requests.exceptions.RequestException as e:
         return ''
+    
+def get_exchange_rate_helper(data, key):
+    index = index_of_property_in_json(key, data)
+    currency = data[index][key][0]['currencyCode'] if index else None
+    if index and currency != 'USD':
+        exchange_rate = get_exchange_rate_to_usd(currency)
+        return exchange_rate
+
+    return 1
 
 def is_float(string):
     try:

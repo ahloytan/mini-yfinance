@@ -1,6 +1,6 @@
 <template>
     <div class="text-3xl my-4 md:my-8">{{ yFinanceData['fullName'] || 'Loading...'}}</div>
-    <form class="max-w-xs mx-auto" @submit="handleSubmit">   
+    <form class="max-w-xs mx-auto">   
         <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
         <div class="relative">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -10,6 +10,7 @@
             </div>
             <input 
                 type="search" 
+                @keydown="debouncedSearch($event)"
                 @keydown.enter.prevent="handleSubmit" 
                 @keydown.backspace.prevent="clearInput"
                 v-model="stock" id="default-search" 
@@ -18,7 +19,7 @@
                 autocomplete="off"
                 required
             >
-            <button type="submit" class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+            <button type="button" @click="handleSubmit" class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
             <!-- Dropdown -->
             <div 
                 v-if="isDropdownVisible && searchSuggestionsData?.length > 0" 
@@ -73,12 +74,7 @@ export default {
     },
     created() {
         this.debouncedSearch = debounce(this.handleKeyDown, 500);
-    },
-    watch: {
-        stock(newVal) {
-            this.debouncedSearch(newVal)
-        }
-    },  
+    }, 
     computed: {
         ...mapGetters(['yFinanceData', 'searchSuggestionsData'])
     },
@@ -99,17 +95,18 @@ export default {
             }
         },
         async handleKeyDown(value) {
-            if (!value) {
+            if (!this.stock) {
                 this.isDropdownVisible = false;
                 return;
             }
 
             try {
-                await this.getSearchSuggestions(value);
+                await this.getSearchSuggestions(this.stock);
                 this.isDropdownVisible = true;
 
             } catch (error) {
                 console.log(error)
+            } finally {
             }
         },
         async selectStock(item) {
