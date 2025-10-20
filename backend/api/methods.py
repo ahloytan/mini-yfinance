@@ -118,4 +118,10 @@ def get_eps_next_5y(stock):
     else:
         return jsonify({'error': f'Request failed with status code {response}'})
 
+def get_suggested_stocks(query):
+    params = generate_search_params(query)
+    response = requests.get(f'{search_url}', params=params, headers=headers)
+
+    return response.json()
+
 #https://www.reddit.com/r/Python/comments/vncw6d/what_is_the_best_library_for_website_scraping/

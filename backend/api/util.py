@@ -49,6 +49,30 @@ def generate_params(stock, keys):
         'period2': end_timestamp,
         'corsDomain': 'finance.yahoo.com',
     }
+def generate_search_params(query):
+
+    #Most of the query params are not needed
+    return {
+        'q': query,
+        'lang': 'en-SG',
+        'region': 'SG',
+        'quotesCount': 10,
+        'newsCount': 0,
+        'listsCount': 0,
+        'enableFuzzyQuery': 'false',
+        'quotesQueryId': 'tss_match_phrase_query',
+        'multiQuoteQueryId': 'multi_quote_single_token_query',
+        'newsQueryId': 'news_cie_vespa',
+        'enableCb': 'false',
+        'enableNavLinks': 'false',
+        'enableEnhancedTrivialQuery': 'true',
+        'enableResearchReports': 'false',
+        'enableCulturalAssets': 'true',
+        'enableLogoUrl': 'true',
+        'enableLists': 'false',
+        'recommendCount': 10,
+        'enableCccBoost': 'true'
+    }
 
 def extract_data(data, key, index, exchange_rate):
     if index is None:

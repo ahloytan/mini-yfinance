@@ -39,7 +39,7 @@ def yfinance_data():
             try:
                 #income statement
                 total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations = executor.submit(get_income_statement_data, stock).result()
-                
+
                 #balance sheet                
                 cash_equivalent_and_short_term_investments, total_debt = executor.submit(get_balance_sheet_data, stock).result()
                 
@@ -49,7 +49,8 @@ def yfinance_data():
             except Exception as e:
                 print(f"Error type: {type(e).__name__}")
                 print(f"Error message: {str(e)}")
-
+                return jsonify({'error': 'Financials not found for this ticker'}), 500   
+            
         end = timer()
         data = {
             'timeTaken': end-start,
@@ -181,6 +182,13 @@ def yfinance_data_v0():
 def get_fcf_growth_rate_yr_1_to_5():
     stock = request.args.get('stock', default=default_stock)
     get_soup_fcf_growth_rate(stock)
+
+@app.route('/search', methods=['GET'])
+def search_tickers():
+    query = request.args.get('query')
+    response = get_suggested_stocks(query)
+
+    return jsonify({"code": 200, "data": response['quotes']}), 200
 
 
 if __name__ == '__main__':

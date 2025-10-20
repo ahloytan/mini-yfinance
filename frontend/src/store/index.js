@@ -16,12 +16,14 @@ const store = createStore({
         "roe": DEFAULT_VALUE,
         "shsOutstanding": DEFAULT_VALUE
       },
+      searchSuggestionsData: [],
       isLoading: false
     }
   },
   getters: {
     yFinanceData: state => state.yFinanceData,
     finvizData: state => state.finvizData,
+    searchSuggestionsData: state => state.searchSuggestionsData,
     isLoading: state => state.isLoading
   },
   mutations: {
@@ -30,6 +32,9 @@ const store = createStore({
     },
     setFinvizData(state, finvizData) {
       state.finvizData = finvizData;
+    },
+    setSearchSuggestionsData(state, searchSuggestionsData) {
+      state.searchSuggestionsData = searchSuggestionsData;
     },
     setLoadingStatus(state, status) {
       state.isLoading = status;
@@ -55,8 +60,8 @@ const store = createStore({
 
         commit('setYFinanceData', data);
       } catch (error) {
-        console.log(error);
-        throw new Error(error);
+        const {response: { data }} = error;
+        throw data.error;
 
       } finally {
 
@@ -76,10 +81,28 @@ const store = createStore({
         commit('setFinvizData', data);
         
       } catch (error) {
+        const {response: { data }} = error;
+        throw data.error;
+        
+      }
+    },
+    async getSearchSuggestions({commit}, stock) {
+      try {
+        const {data: {data}} = await fetch({
+          method: 'GET',
+          url: `search`,
+          params: { 
+            query: stock
+          }
+        })
+
+        commit('setSearchSuggestionsData', data);        
+
+      } catch (error) {
         console.log(error);
         throw new Error(error);
       }
-    },
+    }
   }
 })
 
