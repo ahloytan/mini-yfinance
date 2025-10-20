@@ -29,20 +29,20 @@ def yfinance_data():
         start = timer()
         stock = request.args.get('stock', default=default_stock)
 
-        #company name
-        full_name, last_close = get_company_name_and_last_close(stock)
-
-        #eps
-        eps_next_5y = get_eps_next_5y(stock)
-
-        with ThreadPoolExecutor(max_workers=3) as executor:
+        with ThreadPoolExecutor(max_workers=5) as executor:
             try:
+                #company name
+                full_name, last_close = executor.submit(get_company_name_and_last_close, stock).result()           
+                
+                #eps
+                eps_next_5y = executor.submit(get_eps_next_5y, stock).result()
+
                 #income statement
                 total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations = executor.submit(get_income_statement_data, stock).result()
 
                 #balance sheet                
                 cash_equivalent_and_short_term_investments, total_debt = executor.submit(get_balance_sheet_data, stock).result()
-                
+
                 #cash flow         
                 operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm = executor.submit(get_cash_flow_data, stock).result()
 

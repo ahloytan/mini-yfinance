@@ -39,13 +39,13 @@ def get_income_statement_data(stock):
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
         exchange_rate = get_exchange_rate_helper(data, keys[0])
-
+        
         total_revenue = extract_data(data, keys[0], index_of_property_in_json(keys[0], data), exchange_rate)
-
+        
         net_income_from_continuing_operations_ttm = conversion(data[index_of_property_in_json(keys[1], data)][keys[1]][0]['reportedValue']['raw'], exchange_rate)
-
+        
         income_statement_ttm = conversion(data[index_of_property_in_json(keys[2], data)][keys[2]][0]['reportedValue']['raw'], exchange_rate)
-
+        
         net_income_from_operating_continuing_operations = extract_data(data, keys[3], index_of_property_in_json(keys[3], data), exchange_rate)
 
     return total_revenue, income_statement_ttm, net_income_from_continuing_operations_ttm, net_income_from_operating_continuing_operations

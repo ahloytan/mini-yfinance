@@ -81,9 +81,8 @@ const store = createStore({
         commit('setFinvizData', data);
         
       } catch (error) {
-        const {response: { data }} = error;
-        throw data.error;
-        
+        commit('setFinvizData', {});
+        throw "No finviz data for this ticker";
       }
     },
     async getSearchSuggestions({commit}, stock) {
@@ -99,8 +98,8 @@ const store = createStore({
         commit('setSearchSuggestionsData', data);        
 
       } catch (error) {
-        console.log(error);
-        throw new Error(error);
+        const {response: { data }} = error;
+        throw data.error;
       }
     }
   }
