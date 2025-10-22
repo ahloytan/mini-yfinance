@@ -13,7 +13,9 @@
                 @keydown="debouncedSearch($event)"
                 @keydown.enter.prevent="handleSubmit" 
                 @keydown.backspace.prevent="clearInput"
-                v-model="stock" id="default-search" 
+                @keydown.esc.prevent="handleEsc"
+                v-model="stock" 
+                id="default-search" 
                 class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
                 placeholder="Enter Stock Name" 
                 autocomplete="off"
@@ -74,7 +76,7 @@ export default {
     },
     created() {
         this.debouncedSearch = debounce(this.handleKeyDown, 500);
-    }, 
+    },
     computed: {
         ...mapGetters(['yFinanceData', 'searchSuggestionsData'])
     },
@@ -116,7 +118,10 @@ export default {
         clearInput(event) {
             this.stock = '';
             event.preventDefault();
-            return;
+        },
+        handleEsc(event) {
+            this.isDropdownVisible = false;
+            this.clearInput(event);
         }
     }
 }
