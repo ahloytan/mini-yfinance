@@ -3,11 +3,11 @@ import os
 from flask import jsonify
 
 if os.getenv('ENV') == 'production':
-    from .util import conversion, get_exchange_rate_to_usd, get_exchange_rate_helper, index_of_property_in_json, generate_params, generate_search_params, extract_data
-    from .variables import *
+    from ._util import conversion, get_exchange_rate_to_usd, get_exchange_rate_helper, index_of_property_in_json, generate_params, generate_search_params, extract_data
+    from ._variables import *
 else:
-    from util import *
-    from variables import *
+    from backend.api._util import *
+    from backend.api._variables import *
 
 def get_company_name_and_last_close(stock):
     keys = ['longName', 'shortName', 'regularMarketPrice']

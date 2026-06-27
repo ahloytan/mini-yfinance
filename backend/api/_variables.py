@@ -5,6 +5,7 @@ eps_api_url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/'
 ofx_api_url = 'https://api.ofx.com/PublicSite.ApiService/OFX/spotrate/Individual/USD/'
 yahoo_url = 'https://finance.yahoo.com/quote'
 search_url = 'https://query2.finance.yahoo.com/v1/finance/search'
+finviz_url = 'https://finviz.com/quote.ashx'
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36',      
     'Accept': 'application/json',

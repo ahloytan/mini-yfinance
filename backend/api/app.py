@@ -7,14 +7,14 @@ from timeit import default_timer as timer
 from concurrent.futures import ThreadPoolExecutor
 
 if os.getenv('ENV') == 'production':
-    from .util import conversion, is_float
-    from .methods import *
-    from .variables import yahoo_url, default_stock
+    from ._util import conversion, is_float, get_soup, parse_column
+    from ._methods import *
+    from ._variables import yahoo_url, default_stock
 else:
     import yfinance as yf
-    from util import *
-    from methods import *
-    from variables import yahoo_url, default_stock
+    from backend.api._util import *
+    from backend.api._methods import *
+    from backend.api._variables import yahoo_url, default_stock
 
 app = Flask(__name__)
 CORS(app)
@@ -78,8 +78,19 @@ def yfinance_data():
 def finviz_data():
     try: 
         stock = request.args.get('stock', default=default_stock)
+        
+        #https://github.com/lit26/finvizfinance/pull/155 TEMP BROKEN, USE THIS WHEN PATCHED
+        # finviz_finance_data = finvizfinance(stock).ticker_fundament()
 
-        finviz_finance_data = finvizfinance(stock).ticker_fundament()
+        website = get_soup(f'{finviz_url}?t={stock}')
+        fundament_table = website.find("table", class_="snapshot-table2")
+        rows = fundament_table.find_all("tr")
+        finviz_finance_data = {}
+        for row in rows:
+            cols = row.find_all("td")
+            cols = [i.text for i in cols]
+            
+            finviz_finance_data = parse_column(cols, True, finviz_finance_data)
 
         peg = finviz_finance_data['PEG']
         current_ratio = finviz_finance_data['Current Ratio']

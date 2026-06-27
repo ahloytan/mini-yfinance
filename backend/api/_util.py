@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 import os
 
 if os.getenv('ENV') == 'production':
-    from .variables import *
+    from ._variables import *
 else:
-    from variables import *
+    from backend.api._variables import *
 
 
 def conversion(value, rate):
@@ -141,3 +141,79 @@ def process_yfinance_scraped_value(value):
         return value * 1000
 
     return int(value.replace(',', '')) * 1000
+
+#temp
+def parse_column(cols, raw, fundament_info):
+    header = ""
+    for i, value in enumerate(cols):
+        if i % 2 == 0:
+            header = value
+        else:
+            if header == "Volatility":
+                fundament_info = _parse_volatility(
+                    header, fundament_info, value, raw
+                )
+            elif header == "52W Range":
+                fundament_info = _parse_52w_range(
+                    header, fundament_info, value, raw
+                )
+            elif header == "Optionable" or header == "Shortable":
+                if raw:
+                    fundament_info[header] = value
+                elif value == "Yes":
+                    fundament_info[header] = True
+                else:
+                    fundament_info[header] = False
+            else:
+                # Handle EPS Next Y keys with two different values
+                if header == "EPS next Y" and header in fundament_info.keys():
+                    header += " Percentage"
+                if raw:
+                    fundament_info[header] = value
+                else:
+                    try:
+                        fundament_info[header] = number_covert(value)
+                    except ValueError:
+                        fundament_info[header] = value
+    return fundament_info
+
+def _parse_52w_range(header, fundament_info, value, raw):
+    info_header = ["52W Range From", "52W Range To"]
+    info_value = [0, 2]
+    _parse_value(header, fundament_info, value, raw, info_header, info_value)
+    return fundament_info
+
+def _parse_volatility(header, fundament_info, value, raw):
+    info_header = ["Volatility W", "Volatility M"]
+    info_value = [0, 1]
+    _parse_value(header, fundament_info, value, raw, info_header, info_value)
+    return fundament_info
+
+def _parse_value(header, fundament_info, value, raw, info_header, info_value):
+    try:
+        value = value.split()
+        if raw:
+            for i, value_index in enumerate(info_value):
+                fundament_info[info_header[i]] = value[value_index]
+        else:
+            for i, value_index in enumerate(info_value):
+                fundament_info[info_header[i]] = number_covert(value[value_index])
+    except:
+        fundament_info[header] = value
+    return fundament_info
+
+def number_covert(num):
+
+    if not num or num == "-":  # Check if the string is empty or is "-"
+        return None
+    num = num.strip()  # Remove any surrounding whitespace
+    if num[-1] == "%":
+        return float(num[:-1]) / 100
+    elif num[-1] == "B":
+        return float(num[:-1]) * 1000000000
+    elif num[-1] == "M":
+        return float(num[:-1]) * 1000000
+    elif num[-1] == "K":
+        return float(num[:-1]) * 1000
+    else:
+        return float(num.replace(",", ""))  # Remove commas and convert to float
