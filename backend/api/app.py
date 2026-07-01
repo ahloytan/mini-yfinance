@@ -4,23 +4,15 @@ import os
 import json
 from timeit import default_timer as timer
 from concurrent.futures import ThreadPoolExecutor
-import sys
-from pathlib import Path
-
-root_dir = Path(__file__).resolve().parents[2]
-
-if str(root_dir) not in sys.path:
-    sys.path.insert(0, str(root_dir))
 
 if os.getenv('ENV') == 'production':
-    from backend.api._util import conversion, is_float, get_soup
-    from backend.api._methods import *
-    from backend.api._variables import yahoo_url, default_stock
+    from ._util import conversion, is_float, get_soup
+    from ._methods import *
+    from ._variables import yahoo_url, default_stock
 else:
-    import yfinance as yf
-    from backend.api._util import *
-    from backend.api._methods import *
-    from backend.api._variables import yahoo_url, default_stock
+    from ._util import *
+    from ._methods import *
+    from ._variables import yahoo_url, default_stock
 
 app = Flask(__name__)
 CORS(app)

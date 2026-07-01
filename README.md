@@ -22,7 +22,7 @@ Other libraries: yfinance, finviz, beautifulsoup
 ## Backend
 1. Open command prompt, type in `cd backend`
 2. If this is your first time setting up the project, type `pip install -r requirements.txt`
-3. To start the server, direct yourself to the `api` folder by entering `cd api` in the terminal and type in `python app.py`
+3. To start the server, type in `python -m api.app` or `python3 -m api.app` (MAC)
 4. Note: If you want to deploy a replica, please be reminded to set an environment variable (key=`ENV` and value=`production`) in the [Vercel](https://vercel.com/dashboard) settings page
 
 ## Deployment

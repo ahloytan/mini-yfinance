@@ -6,7 +6,7 @@ import os
 if os.getenv('ENV') == 'production':
     from ._variables import *
 else:
-    from backend.api._variables import *
+    from ._variables import *
 
 
 def conversion(value, rate):
