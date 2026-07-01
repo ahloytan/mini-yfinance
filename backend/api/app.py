@@ -1,15 +1,21 @@
 from flask_cors import CORS
 from flask import Flask, jsonify, request
-from finvizfinance.quote import finvizfinance
 import os
 import json
 from timeit import default_timer as timer
 from concurrent.futures import ThreadPoolExecutor
+import sys
+from pathlib import Path
+
+root_dir = Path(__file__).resolve().parents[2]
+
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
 
 if os.getenv('ENV') == 'production':
-    from ._util import conversion, is_float, get_soup, parse_column
-    from ._methods import *
-    from ._variables import yahoo_url, default_stock
+    from backend.api._util import conversion, is_float, get_soup
+    from backend.api._methods import *
+    from backend.api._variables import yahoo_url, default_stock
 else:
     import yfinance as yf
     from backend.api._util import *
@@ -78,26 +84,29 @@ def yfinance_data():
 def finviz_data():
     try: 
         stock = request.args.get('stock', default=default_stock)
-        
-        #https://github.com/lit26/finvizfinance/pull/155 TEMP BROKEN, USE THIS WHEN PATCHED
-        # finviz_finance_data = finvizfinance(stock).ticker_fundament()
 
-        website = get_soup(f'{finviz_url}?t={stock}')
-        fundament_table = website.find("table", class_="snapshot-table2")
-        rows = fundament_table.find_all("tr")
         finviz_finance_data = {}
-        for row in rows:
-            cols = row.find_all("td")
-            cols = [i.text for i in cols]
+        website = get_soup(f'{finviz_url}?t={stock}')
+        for row in website.find_all('tr', class_='table-dark-row'):
             
-            finviz_finance_data = parse_column(cols, True, finviz_finance_data)
+            label_cell = row.find('td', attrs={'data-boxover-html': True})
+            
+            if label_cell:
+                field_name = label_cell['data-boxover-html']
+                
+                value_cell = row.find('div', class_='snapshot-td-content')
+                
+                if value_cell:
+                    field_value = value_cell.text.strip()
+                    
+                    finviz_finance_data[field_name] = field_value
 
-        peg = finviz_finance_data['PEG']
-        current_ratio = finviz_finance_data['Current Ratio']
-        roe = finviz_finance_data['ROE']
-        eps_next_5y = finviz_finance_data['EPS next 5Y']
+        peg = finviz_finance_data['Price-to-Earnings-to-Growth']
+        current_ratio = finviz_finance_data['Current Ratio (mrq)']
+        roe = finviz_finance_data['Return on Equity (ttm)']
+        eps_next_5y = finviz_finance_data['Long term annual growth estimate (5 years)']
         beta = finviz_finance_data['Beta']
-        shs_outstanding = finviz_finance_data['Shs Outstand']
+        shs_outstanding = finviz_finance_data['Shares outstanding']
 
         data = {
             'peg': peg,

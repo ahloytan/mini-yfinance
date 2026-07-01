@@ -98,7 +98,7 @@ def get_soup(url):
     return BeautifulSoup(r.content, 'html.parser')
 
 def get_currency(soup):
-    currency = soup.select('.Fz\(xs\) span')[-2].text
+    currency = soup.select(r'.Fz\(xs\) span')[-2].text
     if 'Currency in' in currency:
         return currency.split('.')[0][-3:]
     
@@ -110,8 +110,8 @@ def get_soup_cash_flow_level1_processor_and_currency(url, ticker):
     all_data = []
             
     currency = get_currency(soup)
-    for row in table.select('.D\(tbr\)'):
-        data = [cell.text for cell in row.select('.Ta\(c\), .Ta\(start\)')]
+    for row in table.select(r'.D\(tbr\)'):
+        data = [cell.text for cell in row.select(r'.Ta\(c\), .Ta\(start\)')]
         all_data.append(data)
 
     return all_data, currency
@@ -121,8 +121,8 @@ def get_soup_income_statement_processor(url, ticker):
     table = soup.select_one('.BdT')
 
     all_data = []
-    for row in table.select('.D\(tbr\)'):
-        data = [cell.text for cell in row.select('.Ta\(c\), .Ta\(start\)')]
+    for row in table.select(r'.D\(tbr\)'):
+        data = [cell.text for cell in row.select(r'.Ta\(c\), .Ta\(start\)')]
         all_data.append(data)
 
         if data[0] == 'Net Income Common Stockholders':
@@ -133,7 +133,7 @@ def get_soup_income_statement_processor(url, ticker):
 def get_soup_fcf_growth_rate(stock):
     url = f'https://sg.finance.yahoo.com/quote/{stock}/analysis?p={stock}'
     soup = get_soup(url.format(ticker=stock))
-    res = soup.select('.Ta\(end\).Py\(10px\)')
+    res = soup.select(r'.Ta\(end\).Py\(10px\)')
     return res[-8].text
 
 def process_yfinance_scraped_value(value):
@@ -141,79 +141,3 @@ def process_yfinance_scraped_value(value):
         return value * 1000
 
     return int(value.replace(',', '')) * 1000
-
-#temp
-def parse_column(cols, raw, fundament_info):
-    header = ""
-    for i, value in enumerate(cols):
-        if i % 2 == 0:
-            header = value
-        else:
-            if header == "Volatility":
-                fundament_info = _parse_volatility(
-                    header, fundament_info, value, raw
-                )
-            elif header == "52W Range":
-                fundament_info = _parse_52w_range(
-                    header, fundament_info, value, raw
-                )
-            elif header == "Optionable" or header == "Shortable":
-                if raw:
-                    fundament_info[header] = value
-                elif value == "Yes":
-                    fundament_info[header] = True
-                else:
-                    fundament_info[header] = False
-            else:
-                # Handle EPS Next Y keys with two different values
-                if header == "EPS next Y" and header in fundament_info.keys():
-                    header += " Percentage"
-                if raw:
-                    fundament_info[header] = value
-                else:
-                    try:
-                        fundament_info[header] = number_covert(value)
-                    except ValueError:
-                        fundament_info[header] = value
-    return fundament_info
-
-def _parse_52w_range(header, fundament_info, value, raw):
-    info_header = ["52W Range From", "52W Range To"]
-    info_value = [0, 2]
-    _parse_value(header, fundament_info, value, raw, info_header, info_value)
-    return fundament_info
-
-def _parse_volatility(header, fundament_info, value, raw):
-    info_header = ["Volatility W", "Volatility M"]
-    info_value = [0, 1]
-    _parse_value(header, fundament_info, value, raw, info_header, info_value)
-    return fundament_info
-
-def _parse_value(header, fundament_info, value, raw, info_header, info_value):
-    try:
-        value = value.split()
-        if raw:
-            for i, value_index in enumerate(info_value):
-                fundament_info[info_header[i]] = value[value_index]
-        else:
-            for i, value_index in enumerate(info_value):
-                fundament_info[info_header[i]] = number_covert(value[value_index])
-    except:
-        fundament_info[header] = value
-    return fundament_info
-
-def number_covert(num):
-
-    if not num or num == "-":  # Check if the string is empty or is "-"
-        return None
-    num = num.strip()  # Remove any surrounding whitespace
-    if num[-1] == "%":
-        return float(num[:-1]) / 100
-    elif num[-1] == "B":
-        return float(num[:-1]) * 1000000000
-    elif num[-1] == "M":
-        return float(num[:-1]) * 1000000
-    elif num[-1] == "K":
-        return float(num[:-1]) * 1000
-    else:
-        return float(num.replace(",", ""))  # Remove commas and convert to float
