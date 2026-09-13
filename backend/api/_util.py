@@ -1,5 +1,5 @@
 import datetime
-import requests
+from curl_cffi import requests
 from bs4 import BeautifulSoup
 import os
 
@@ -94,7 +94,7 @@ def extract_data(data, key, index, exchange_rate):
 
 #v0 methods
 def get_soup(url):
-    r = requests.get(url, headers=headers)
+    r = requests.get(url, headers=headers, proxies=proxies)
     return BeautifulSoup(r.content, 'html.parser')
 
 def get_currency(soup):
