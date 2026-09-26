@@ -1,6 +1,7 @@
 import requests
 import os
 from flask import jsonify
+import yfinance as yf
 
 if os.getenv('ENV') == 'production':
     from ._util import conversion, get_exchange_rate_to_usd, get_exchange_rate_helper, index_of_property_in_json, generate_params, generate_search_params, extract_data
@@ -10,21 +11,15 @@ else:
     from ._variables import *
 
 def get_company_name_and_last_close(stock):
-    keys = ['longName', 'shortName', 'regularMarketPrice']
     params = {
-        'formatted': 'true',
-        'crumb': '1DOWVhBLaD.',
         'lang': 'en-US',
         'region': 'US',
-        'fields': ','.join(keys),
-        'symbols': stock,
-        'corsDomain': 'finance.yahoo.com',
     }
-    response = requests.get(summary_api_url, params=params, headers=headers)
+    response = requests.get(f"{summary_api_url}{stock}", params=params, headers=headers)
     if response.status_code == 200:
-        result = response.json()['quoteResponse']['result'][0]
+        result = response.json()['chart']['result'][0]['meta']
         full_name = result['longName'] if result['longName'] else result['shortName']
-        last_close = result['regularMarketPrice']['raw']
+        last_close = result['regularMarketPrice']
         return full_name, last_close
     
     return 'Error Retrieving Name'
@@ -35,7 +30,7 @@ def get_income_statement_data(stock):
     params = generate_params(stock, keys)
     end_point = f"{financials_api_url}{stock}"
     response = requests.get(end_point, params=params, headers=headers)
-
+    
     if response.status_code == 200:
         data = response.json()['timeseries']['result']
         exchange_rate = get_exchange_rate_helper(data, keys[0])
@@ -94,20 +89,9 @@ def get_cash_flow_data(stock):
     return operating_cash_flow, operating_cash_flow_ttm, free_cash_flow, free_cash_flow_ttm
 
 def get_eps_next_5y(stock):
-    eps_next_5y = '0%'
-    end_point = f'{eps_api_url}{stock}'
-    params = {
-        'formatted': 'true',
-        'crumb': '1DOWVhBLaD.',
-        'lang': 'en-US',
-        'region': 'US',
-        'modules': 'earningsTrend',
-        'corsDomain': 'finance.yahoo.com',
-    }
-    
-    response = requests.get(end_point, params=params, headers=headers)
-    if response.status_code == 200:        
-        eps_next_5y = response.json()['quoteSummary']['result'][0]['earningsTrend']['trend'][-2]['growth'].get('fmt', "0%")
+    response = yf.Ticker(stock)    
+    if response:        
+        eps_next_5y = response.get_growth_estimates(as_dict=True).get('stockTrend', {}).get('+1y', 0)
         return eps_next_5y
     else:
         return jsonify({'error': f'Request failed with status code {response}'})

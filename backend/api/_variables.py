@@ -5,8 +5,8 @@ load_dotenv()
 
 default_stock = 'AAPL'
 financials_api_url = 'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/'
-summary_api_url = 'https://query2.finance.yahoo.com/v7/finance/quote'
-eps_api_url = 'https://query1.finance.yahoo.com/v10/finance/quoteSummary/'
+summary_api_url = 'https://query2.finance.yahoo.com/v8/finance/chart/'
+eps_api_url = 'https://finance.yahoo.com/quote/AAPL/analysis/'
 ofx_api_url = 'https://api.ofx.com/PublicSite.ApiService/OFX/spotrate/Individual/USD/'
 yahoo_url = 'https://finance.yahoo.com/quote'
 search_url = 'https://query2.finance.yahoo.com/v1/finance/search'

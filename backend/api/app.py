@@ -52,7 +52,7 @@ def yfinance_data():
         end = timer()
         data = {
             'timeTaken': end-start,
-            'epsNext5Y': float(eps_next_5y[:-1]),
+            'epsNext5Y': eps_next_5y * 100,
             'lastClose': round(last_close, 2),
             'fullName': full_name,
             'totalRevenue': json.dumps(total_revenue),
